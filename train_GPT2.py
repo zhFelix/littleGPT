@@ -15,10 +15,13 @@ CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
 DATASETS = ["chinese", "english"]
 
-BLOCK_SIZE = 64
+BLOCK_SIZE = 96
 BATCH_SIZE = 4
 EPOCHS = 20
-LEARNING_RATE = 3e-4
+LEARNING_RATE = 1e-4
+MODEL_EMBED_DIM = 384
+MODEL_LAYER_COUNT = 6
+MODEL_HEAD_COUNT = 6
 SAVE_CHECKPOINT_EVERY = 20
 EVAL_EVERY = 1
 EARLY_STOPPING_PATIENCE = 0
@@ -51,17 +54,28 @@ class TextBlockDataset(Dataset):
         }
 
 
-def build_model(tokenizer: AutoTokenizer, block_size: int) -> GPT2LMHeadModel:
-    config = GPT2Config(
+def build_model_config(tokenizer: AutoTokenizer, block_size: int) -> GPT2Config:
+    return GPT2Config(
         vocab_size=tokenizer.vocab_size,
         n_positions=block_size,
-        n_embd=512,
-        n_layer=8,
-        n_head=8,
+        n_embd=MODEL_EMBED_DIM,
+        n_layer=MODEL_LAYER_COUNT,
+        n_head=MODEL_HEAD_COUNT,
         bos_token_id=tokenizer.bos_token_id,
         eos_token_id=tokenizer.eos_token_id,
     )
-    return GPT2LMHeadModel(config)
+
+
+def build_model(tokenizer: AutoTokenizer, block_size: int) -> GPT2LMHeadModel:
+    return GPT2LMHeadModel(build_model_config(tokenizer, block_size))
+
+
+def get_model_architecture(config: GPT2Config) -> dict[str, int]:
+    return {
+        "n_embd": int(config.n_embd),
+        "n_layer": int(config.n_layer),
+        "n_head": int(config.n_head),
+    }
 
 
 def collect_dataset_files(data_dir: Path) -> list[Path]:
@@ -142,6 +156,9 @@ def save_checkpoint(
         "epoch": epoch,
         "block_size": block_size,
         "vocab_size": tokenizer.vocab_size,
+        "model_n_embd": int(model.config.n_embd),
+        "model_n_layer": int(model.config.n_layer),
+        "model_n_head": int(model.config.n_head),
         "optimizer_state_dict": optimizer.state_dict(),
     }
     if extra_state:
@@ -167,6 +184,23 @@ def load_checkpoint(
     if checkpoint_vocab_size != expected_vocab_size:
         raise ValueError(
             f"Checkpoint vocab_size={checkpoint_vocab_size} 与当前 tokenizer vocab_size={expected_vocab_size} 不一致，请删除旧 checkpoint 后重新训练。"
+        )
+
+    checkpoint_config = GPT2Config.from_pretrained(checkpoint_path)
+    checkpoint_architecture = {
+        "n_embd": int(trainer_state.get("model_n_embd", checkpoint_config.n_embd)),
+        "n_layer": int(trainer_state.get("model_n_layer", checkpoint_config.n_layer)),
+        "n_head": int(trainer_state.get("model_n_head", checkpoint_config.n_head)),
+    }
+    expected_architecture = {
+        "n_embd": MODEL_EMBED_DIM,
+        "n_layer": MODEL_LAYER_COUNT,
+        "n_head": MODEL_HEAD_COUNT,
+    }
+    if checkpoint_architecture != expected_architecture:
+        raise ValueError(
+            "Checkpoint model architecture is incompatible with the current training configuration: "
+            f"checkpoint={checkpoint_architecture}, expected={expected_architecture}."
         )
 
     checkpoint_model = AutoModelForCausalLM.from_pretrained(checkpoint_path)
@@ -371,7 +405,9 @@ def main() -> None:
     else:
         print("Evaluation skipped: neither ./valid nor ./test exists.")
 
-    latest_checkpoint = find_latest_checkpoint()
+    latest_checkpoint = BASE_DIR / "checkpoints" / "best"
+    if not latest_checkpoint.exists():
+        latest_checkpoint = find_latest_checkpoint()
     start_epoch = 0
     best_eval_loss: float | None = None
     best_epoch = 0
@@ -382,19 +418,25 @@ def main() -> None:
         model = build_model(tokenizer, effective_block_size).to(device)
         print("No checkpoint found, training from scratch.")
     else:
-        model, trainer_state, position_embeddings_expanded = load_checkpoint(
-            latest_checkpoint,
-            device,
-            effective_block_size,
-            tokenizer.vocab_size,
-        )
-        start_epoch = int(trainer_state["epoch"])
-        saved_best_eval_loss = trainer_state.get("best_eval_loss")
-        if saved_best_eval_loss is not None:
-            best_eval_loss = float(saved_best_eval_loss)
-        best_epoch = int(trainer_state.get("best_epoch", start_epoch))
-        epochs_without_improvement = int(trainer_state.get("epochs_without_improvement", 0))
-        print(f"Resuming from checkpoint: {latest_checkpoint}")
+        try:
+            model, trainer_state, position_embeddings_expanded = load_checkpoint(
+                latest_checkpoint,
+                device,
+                effective_block_size,
+                tokenizer.vocab_size,
+            )
+            start_epoch = int(trainer_state["epoch"])
+            saved_best_eval_loss = trainer_state.get("best_eval_loss")
+            if saved_best_eval_loss is not None:
+                best_eval_loss = float(saved_best_eval_loss)
+            best_epoch = int(trainer_state.get("best_epoch", start_epoch))
+            epochs_without_improvement = int(trainer_state.get("epochs_without_improvement", 0))
+            print(f"Resuming from checkpoint: {latest_checkpoint}")
+        except ValueError as exc:
+            print(f"Checkpoint skipped: {exc}")
+            latest_checkpoint = None
+            model = build_model(tokenizer, effective_block_size).to(device)
+            print("Training from scratch with the current smaller model configuration.")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
     if latest_checkpoint is not None and not position_embeddings_expanded:
