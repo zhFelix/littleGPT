@@ -6,7 +6,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR / "checkpoints" / "best"
+MODEL_DIR = BASE_DIR / "trained_model"
 DEFAULT_PROMPT = "地球围绕"
 MAX_NEW_TOKENS = 30
 

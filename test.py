@@ -8,7 +8,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR / "checkpoints" / "best"
+MODEL_DIR = BASE_DIR / "trained_model"
 TEST_DIR = BASE_DIR / "test"
 TEST_FILES = ["chinese", "english"]
 DEFAULT_PROMPTS = [
@@ -133,7 +133,7 @@ def generate_text(
             eos_token_id=tokenizer.eos_token_id,
         )
 
-    return tokenizer.decode(output_ids[0], skip_special_tokens=True).replace("\n", " ")
+    return tokenizer.decode(output_ids[0], skip_special_tokens=True)
 
 
 def main() -> None:
