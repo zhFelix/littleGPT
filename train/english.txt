@@ -1,0 +1,493 @@
+The Earth moves around the Sun once every year.
+The Moon moves around the Earth.
+The Sun is a star at the center of our solar system.
+Sunlight provides energy for most life on Earth.
+The Earth rotates once every twenty-four hours.
+Day and night are caused by the rotation of the Earth.
+The Moon reflects light from the Sun.
+Gravity keeps the planets moving around the Sun.
+The solar system contains planets, moons, asteroids, and comets.
+Jupiter is the largest planet in the solar system.
+Mercury is the closest planet to the Sun.
+Venus has a very thick atmosphere.
+Mars is often called the red planet.
+Saturn is famous for its large system of rings.
+Uranus rotates on its side compared with most other planets.
+Neptune is the farthest major planet from the Sun.
+A comet is made of ice, dust, and rock.
+Asteroids are rocky objects that orbit the Sun.
+A galaxy contains stars, gas, dust, and dark matter.
+The Milky Way is the galaxy that contains our solar system.
+There are billions of stars in the Milky Way.
+The universe contains billions of galaxies.
+Light travels extremely fast through empty space.
+Light from the Sun takes about eight minutes to reach Earth.
+A light-year is a measure of distance, not time.
+Black holes have gravity so strong that light cannot escape from inside the event horizon.
+Stars produce energy through nuclear fusion.
+The Sun converts hydrogen into helium in its core.
+Massive stars can explode as supernovae.
+Some supernova explosions can create heavy elements.
+Neutron stars are extremely dense objects.
+Atoms are the basic building blocks of ordinary matter.
+An atom contains protons, neutrons, and electrons.
+Protons have a positive electric charge.
+Electrons have a negative electric charge.
+Neutrons have no electric charge.
+The nucleus is located at the center of an atom.
+Electrons occupy regions around the atomic nucleus.
+An element is defined by the number of protons in its atoms.
+Hydrogen is the simplest chemical element.
+Oxygen is important for human respiration.
+Carbon is a key element in living organisms.
+Water is made of hydrogen and oxygen.
+A water molecule contains two hydrogen atoms and one oxygen atom.
+Water freezes at zero degrees Celsius under standard atmospheric pressure.
+Water boils at one hundred degrees Celsius at standard atmospheric pressure.
+Ice is less dense than liquid water.
+This is why ice floats on water.
+Matter can exist as a solid, liquid, gas, or plasma.
+Temperature is related to the average kinetic energy of particles.
+Heat naturally flows from warmer objects to cooler objects.
+Energy cannot be created or destroyed in an isolated system.
+Energy can change from one form into another.
+Kinetic energy is the energy of motion.
+Potential energy can be stored because of an object's position.
+Friction converts some mechanical energy into heat.
+Gravity attracts objects that have mass.
+The strength of gravity depends on mass and distance.
+Newton described important laws of motion and gravity.
+An object at rest tends to remain at rest unless a force acts on it.
+Force can change the motion of an object.
+Acceleration describes how quickly velocity changes.
+Speed describes how fast an object moves.
+Velocity includes both speed and direction.
+Sound is produced by vibrations.
+Sound waves need a medium such as air, water, or solid material.
+Sound cannot travel through a perfect vacuum.
+Light can travel through empty space.
+Different colors of visible light have different wavelengths.
+Red light has a longer wavelength than blue light.
+A prism can separate white light into different colors.
+Plants use sunlight to produce chemical energy.
+Photosynthesis takes place mainly in the leaves of plants.
+Plants absorb carbon dioxide from the atmosphere.
+Plants release oxygen during photosynthesis.
+Animals obtain energy by consuming food.
+Cells are the basic units of life.
+The human body contains trillions of cells.
+DNA stores genetic information in living organisms.
+Genes are sections of DNA.
+Proteins perform many important functions inside cells.
+The human brain contains billions of neurons.
+Neurons communicate using electrical and chemical signals.
+The heart pumps blood through the human body.
+Blood carries oxygen and nutrients to tissues.
+The lungs exchange oxygen and carbon dioxide.
+The skeleton supports and protects the human body.
+Muscles allow the body to move.
+Bacteria are microscopic living organisms.
+Some bacteria are useful to humans.
+Other bacteria can cause disease.
+Viruses are smaller than most bacteria.
+Viruses reproduce by using the machinery of host cells.
+Vaccines help the immune system recognize specific pathogens.
+The immune system protects the body from harmful microorganisms.
+Evolution describes changes in populations over generations.
+Natural selection can cause useful traits to become more common.
+Living organisms inherit genetic information from their parents.
+Ecosystems contain living organisms and their physical environment.
+Plants are producers in many ecosystems.
+Animals that eat plants are called herbivores.
+Animals that eat other animals are called carnivores.
+Decomposers recycle nutrients in ecosystems.
+Food chains describe the transfer of energy between organisms.
+Ocean water covers most of the Earth's surface.
+The oceans play an important role in regulating Earth's climate.
+The atmosphere is a mixture of gases surrounding the Earth.
+Nitrogen is the most abundant gas in Earth's atmosphere.
+Oxygen makes up about one fifth of Earth's atmosphere.
+Carbon dioxide is a greenhouse gas.
+Greenhouse gases help keep the Earth warm.
+Climate describes long-term patterns of weather.
+Weather can change from hour to hour and day to day.
+Clouds form when water vapor condenses into tiny droplets or ice crystals.
+Rain is part of the Earth's water cycle.
+Water evaporates from oceans, lakes, and rivers.
+Water vapor can cool and form clouds.
+Rivers carry water from higher ground toward lower areas.
+Mountains can form when tectonic plates collide.
+Earthquakes often occur near boundaries between tectonic plates.
+Volcanoes can release lava, gas, and ash.
+The Earth's outer shell is divided into tectonic plates.
+The Earth's core is extremely hot.
+Fossils provide evidence about organisms that lived in the past.
+Computers process information using electronic circuits.
+A computer stores information as patterns of binary digits.
+A binary digit can have the value zero or one.
+Computer processors perform billions of operations every second.
+Software consists of instructions that tell computers what to do.
+An algorithm is a sequence of steps used to solve a problem.
+Artificial intelligence allows computers to perform tasks that normally require intelligence.
+Machine learning allows computers to learn patterns from data.
+A neural network is inspired by networks of biological neurons.
+Large language models learn statistical patterns from large collections of text.
+A language model predicts likely sequences of tokens.
+Training changes the parameters of a neural network.
+Gradient descent is commonly used to optimize neural networks.
+A loss function measures how far a model's prediction is from the desired result.
+More training data does not always guarantee a better model.
+The quality of training data is important for machine learning.
+A model can memorize training examples if it is trained improperly.
+Generalization means performing well on data that was not seen during training.
+Artificial intelligence does not understand the world in exactly the same way humans do.
+The Earth is one of eight major planets that orbit the Sun. It takes about one year for the Earth to complete one orbit. At the same time, the Earth rotates around its own axis. This rotation causes the regular cycle of day and night.
+Plants need energy to grow. Most plants obtain this energy from sunlight through a process called photosynthesis. During photosynthesis, plants use carbon dioxide and water to produce sugars. Oxygen is released as a by-product of this process.
+The human brain is a complex organ made of billions of nerve cells called neurons. Neurons communicate with one another through electrical and chemical signals. Networks of neurons allow humans to learn, remember, move, and process information.
+Stars are enormous spheres of hot gas. They produce energy through nuclear fusion in their cores. During fusion, light atomic nuclei combine to form heavier nuclei and release energy. The Sun uses this process to produce the light and heat that reach the Earth.
+Machine learning is a field of artificial intelligence. Instead of explicitly programming every rule, developers can train a model using examples. During training, the model adjusts its parameters to reduce prediction errors. After training, the model can use the patterns it has learned to make predictions about new data.
+The Sun is a star.
+Earth is the third planet from the Sun. It moves around the Sun while also rotating around its own axis. Rotation produces the cycle of day and night, while Earth's orbit and axial tilt contribute to the seasons.
+The Moon is Earth's only natural satellite.
+The Moon does not produce its own visible light.
+Moonlight is mainly sunlight reflected from the lunar surface. As the relative positions of the Sun, Earth, and Moon change, we observe different phases of the Moon.
+Light travels through a vacuum at about three hundred thousand kilometers per second.
+The average distance between Earth and the Sun is about one hundred and fifty million kilometers. Even across this enormous distance, sunlight reaches Earth in a little more than eight minutes.
+The universe is extremely large.
+The Milky Way is a galaxy containing hundreds of billions of stars. The Sun is only one of those stars, and the Milky Way itself is only one galaxy among a vast number of galaxies in the observable universe.
+The color of a star is related to its surface temperature.
+Hotter stars often appear bluer, while cooler stars often appear redder.
+Stars can produce energy through nuclear fusion. In the Sun, hydrogen nuclei combine through a series of reactions that ultimately produce helium. Energy released by these reactions eventually escapes into space as radiation.
+A black hole is an object with extremely strong gravity.
+A black hole is surrounded by a boundary called the event horizon. Once something passes sufficiently far inside this boundary, it cannot return to the outside universe.
+Not every star becomes a black hole.
+Some massive stars may leave behind neutron stars or black holes at the end of their evolution.
+Atoms are extremely small.
+An ordinary atom consists of a nucleus surrounded by electrons. The nucleus contains protons and usually neutrons. Electrons occupy quantum states around the nucleus rather than following simple planetary paths.
+Protons have positive electric charge.
+Electrons have negative electric charge.
+Neutrons have no net electric charge.
+The identity of a chemical element is determined by the number of protons in its nucleus. Hydrogen has one proton, while carbon has six.
+Water is an important substance for life on Earth.
+A water molecule contains two hydrogen atoms and one oxygen atom. Water can naturally exist on Earth as a solid, liquid, or gas, allowing it to participate in the global water cycle.
+Ice usually floats on liquid water.
+This happens because ordinary ice is less dense than liquid water. When water freezes, its molecules form an open crystalline structure that occupies more space.
+Air is not a single substance.
+Earth's atmosphere is mainly composed of nitrogen and oxygen. It also contains argon, carbon dioxide, water vapor, and smaller amounts of other gases.
+Oxygen is important for respiration in many organisms.
+Photosynthesis releases oxygen.
+Plants can use sunlight to store energy in chemical compounds. During photosynthesis, plants use carbon dioxide and water to produce energy-rich organic molecules.
+Chlorophyll absorbs certain wavelengths of visible light.
+Leaves often look green because chlorophyll reflects and transmits more green light than many other visible wavelengths.
+Cells are basic units of life.
+Some organisms consist of only one cell, while the human body contains trillions of cells. Different cell types have specialized structures and functions.
+DNA carries genetic information.
+Genes are functional regions of DNA.
+The DNA inside a cell contains instructions that influence how proteins are produced. These proteins participate in growth, development, metabolism, and many other biological processes.
+Proteins are not only structural materials.
+Many enzymes are proteins. Enzymes accelerate specific chemical reactions, allowing biological processes to occur efficiently under conditions compatible with life.
+The human heart is a muscular organ.
+It repeatedly contracts and relaxes to move blood through the circulatory system.
+Blood transports oxygen, nutrients, hormones, and metabolic products. Hemoglobin inside red blood cells can bind oxygen and plays an important role in oxygen transport.
+The lungs are major organs of respiration.
+Inside the lungs, oxygen can move from tiny air spaces into the blood. Carbon dioxide moves in the opposite direction and can then leave the body during exhalation.
+The brain is a major part of the nervous system.
+The human brain contains billions of neurons. Neurons communicate using electrical activity and chemical signals, forming networks involved in sensation, movement, memory, language, and reasoning.
+Sleep is important for human health.
+The brain remains active during sleep and performs many important biological processes.
+Bacteria are microscopic organisms.
+Some bacteria cause disease, but many bacteria are harmless or beneficial. Bacteria participate in digestion, decomposition, nutrient cycles, and the production of foods such as yogurt.
+Viruses and bacteria are different.
+Viruses generally lack the complete cellular machinery required for independent reproduction. They enter host cells and use cellular components to produce new virus particles.
+Antibiotics can treat certain bacterial infections.
+Antibiotics do not normally cure viral infections.
+Vaccines can prepare the immune system to recognize particular pathogens. When the body later encounters the pathogen, immune responses may develop more quickly and effectively.
+Populations of organisms evolve.
+Evolution does not mean that an individual organism deliberately changes itself. Instead, inherited characteristics in a population can change in frequency over many generations.
+Genetic variation provides material for evolution.
+Environmental conditions affect survival and reproduction.
+Natural selection occurs when inherited differences influence reproductive success. Over many generations, traits that improve reproductive success under particular conditions may become more common.
+Dinosaurs lived on Earth for a very long period.
+Modern birds are evolutionarily related to certain groups of dinosaurs. Fossils, anatomy, genetics, and other forms of evidence help scientists reconstruct the history of life.
+Fossils provide evidence about ancient organisms.
+Only a small fraction of organisms become fossils. For this reason, the fossil record is an incomplete sample of the life that existed in the past.
+Earth formed about four and a half billion years ago.
+During Earth's long history, continents moved, climates changed, species appeared and disappeared, and the composition of the atmosphere evolved.
+Earth's surface is not completely stationary.
+The outer rocky shell of Earth is divided into tectonic plates. These plates move very slowly, but over millions of years their motion can dramatically reshape the planet.
+Many earthquakes occur near plate boundaries.
+Plate movement can also contribute to mountain building and volcanic activity.
+A volcanic eruption may release lava, ash, rock fragments, and gases. Volcanoes can cause destructive events, but they also create new rocks and landscapes.
+Weather and climate are different concepts.
+Weather describes atmospheric conditions over relatively short periods. Climate describes long-term statistical patterns of temperature, rainfall, wind, and other atmospheric conditions.
+Clouds consist of tiny water droplets or ice crystals.
+When moist air cools sufficiently, water vapor can condense onto microscopic particles. Large collections of these droplets or crystals become visible as clouds.
+Water continuously moves through Earth's environment.
+Water evaporates from oceans, lakes, soil, and living organisms. It can later condense into clouds and return to the surface as rain, snow, or other forms of precipitation.
+Oceans cover most of Earth's surface.
+They strongly influence global climate.
+Water can store large amounts of thermal energy. Ocean currents transport some of this heat around the planet and influence regional climates.
+Sound is associated with vibrations.
+When a sound wave travels through air, molecules undergo alternating regions of compression and rarefaction. Ordinary sound waves require matter through which to travel.
+Light can travel through a vacuum.
+Frequency is related to the pitch of a sound. In general, higher-frequency sound waves are perceived as having a higher pitch when they fall within the range of human hearing.
+Electricity is a common physical phenomenon.
+In a conducting material such as a metal, electric charges can move in response to an electric field. An organized flow of electric charge constitutes an electric current.
+A battery converts chemical energy into electrical energy.
+A generator can convert mechanical energy into electrical energy.
+Magnetic fields cannot be seen directly, but their effects can be measured through forces on magnets, magnetic materials, and moving electric charges.
+Electricity and magnetism are closely connected. Changing electric and magnetic fields can propagate through space as electromagnetic waves.
+Visible light is a form of electromagnetic radiation.
+Radio waves, microwaves, infrared radiation, visible light, ultraviolet radiation, X-rays, and gamma rays all belong to the electromagnetic spectrum.
+Energy can change from one form to another.
+As an object falls, gravitational potential energy can be converted into kinetic energy. After impact, some mechanical energy may become heat, sound, or deformation.
+Energy conservation is a fundamental principle of physics.
+Energy does not appear from nothing or disappear without a corresponding transfer or transformation.
+Forces can change motion.
+When the net force acting on an object is not zero, the object's velocity can change. Acceleration describes the rate at which velocity changes.
+Mass and weight are not the same thing.
+Mass is an intrinsic property of an object. Weight is a force caused by gravity. An astronaut has approximately the same mass on Earth and on the Moon but has a much smaller weight on the Moon.
+Satellites can orbit Earth.
+An orbiting satellite is not free from gravity. Earth's gravity continually changes the direction of the satellite's velocity, causing it to follow a curved path around the planet.
+Computers process information digitally.
+In modern digital computers, information can ultimately be represented using patterns of zeros and ones. Text, images, audio, and video can all be encoded as numerical data.
+A computer does not literally store the shape of every letter as text.
+Character encoding systems assign numerical values to characters. Software can later interpret these numbers and display the corresponding symbols using fonts.
+A program consists of instructions.
+A processor executes instructions according to defined rules.
+An algorithm is a procedure for solving a problem. Different algorithms for the same task may require very different amounts of time and memory.
+The Internet is a network of networks.
+When a person opens a website, data may travel through many routers and communication links before reaching the destination. Information is often divided into packets that are transmitted and later reassembled.
+Artificial intelligence includes many different methods.
+Machine learning is an important branch of artificial intelligence. Instead of explicitly programming every rule, developers can allow a model to adjust its parameters by learning from data.
+A neural network contains many numerical parameters.
+Before training, these parameters are often initialized with small random values. During training, examples are processed, errors are measured, and optimization algorithms adjust the parameters.
+A language model can have a surprisingly simple objective.
+For example, a model can learn to predict the next token based on previous tokens. By repeating this task across enormous amounts of text, the model can learn many statistical patterns of language.
+A tokenizer connects text with a language model.
+The tokenizer converts text into a sequence of tokens. Each token receives an integer identifier, which is then transformed into numerical vectors before being processed by the neural network.
+A text model does not initially know what the word "apple" means.
+At first, the token is only a numerical symbol. By observing the contexts in which the token appears, the model gradually develops internal representations associated with its usage.
+Embeddings represent tokens as vectors.
+Tokens that occur in related contexts may develop representations that reflect some of their statistical relationships, although these representations do not function exactly like human concepts.
+Training a neural network requires an objective.
+A loss function measures how different the model's predictions are from desired outputs. Optimization methods use information from the loss to modify the model parameters.
+Backpropagation is an important training algorithm.
+It efficiently calculates how changes in model parameters would affect the loss. An optimizer can then use these gradients to update the parameters.
+More training is not always better.
+If a model repeatedly sees a small training set, it may begin to memorize specific examples instead of learning patterns that generalize to new data.
+This problem is known as overfitting.
+A model may have very low training loss while performing poorly on unseen examples. A validation set helps researchers detect when this begins to happen.
+Training data quality matters.
+Large amounts of duplicated, incorrect, or poorly written text can teach undesirable patterns. Increasing the number of tokens alone does not guarantee a better model.
+Scientific knowledge depends on evidence.
+Scientists propose explanations and test them using observations, measurements, experiments, and mathematical reasoning. Results that disagree with a hypothesis can be just as informative as results that support it.
+Science is a process rather than a collection of permanent facts.
+New evidence can strengthen an existing theory, reveal its limitations, or lead researchers toward a better explanation. The ability to revise ideas in response to evidence is one of the strengths of scientific reasoning.
+Measurement always has some uncertainty.
+No physical measurement is infinitely precise. Scientists estimate uncertainty so that results can be interpreted and compared appropriately.
+Models are simplified representations of reality.
+A scientific model does not need to contain every detail of a system. A useful model captures the features that are important for answering a particular question.
+Mathematics is widely used in science.
+Equations allow scientists to describe relationships precisely, make quantitative predictions, and compare theoretical ideas with experimental observations.
+Probability helps describe uncertainty.
+Some processes are difficult to predict because information is incomplete, while other physical processes contain randomness at a fundamental level. Probability provides a mathematical framework for reasoning about uncertain outcomes.
+Data alone does not automatically produce knowledge.
+Measurements must be interpreted using models, assumptions, statistical methods, and existing evidence. Good scientific reasoning requires understanding both what the data shows and what it does not show.
+Mathematics studies abstract patterns involving quantity, structure, space, and change.
+Natural numbers can represent counting and order.
+A prime number has exactly two positive divisors: one and itself.
+Two is the only even prime number.
+Every integer greater than one has a unique prime factorization apart from the order of the factors.
+An irrational number cannot be expressed as a ratio of two integers.
+Pi is an irrational number equal to the ratio of a circle's circumference to its diameter.
+A function describes a relationship between inputs and outputs.
+A derivative describes an instantaneous rate of change.
+An integral can represent accumulated quantities such as area, distance, or total mass.
+Probability provides a mathematical language for uncertainty.
+Conditional probability describes the probability of an event given that another condition is known.
+Bayes' theorem combines prior information with new evidence to update probabilities.
+Statistics is concerned with collecting, describing, analyzing, and interpreting data.
+The mean can be strongly affected by extreme values, while the median is often more resistant.
+Standard deviation measures how widely values are spread around their mean.
+Correlation does not by itself establish causation.
+Random sampling can reduce systematic bias in how observations are selected.
+Matrices can represent systems of linear relationships and are widely used in graphics and machine learning.
+A vector can represent both magnitude and direction.
+Coordinate systems provide numerical descriptions of position in space.
+Geometry studies shapes, sizes, positions, and spatial relationships.
+Symmetry is important in mathematics, physics, chemistry, and biology.
+Fractals can display similar geometric structure across different scales.
+A chaotic system can follow deterministic equations while remaining extremely sensitive to its initial conditions.
+Entropy is an important state quantity in thermodynamics.
+In an isolated system, spontaneous processes generally proceed in a direction that does not decrease total entropy.
+Thermal equilibrium occurs when there is no net heat transfer between systems in contact.
+During a phase transition, a substance can absorb or release latent heat without a large change in temperature.
+Evaporation occurs at a liquid surface, while boiling occurs throughout the liquid once suitable conditions are reached.
+Surface tension arises because molecules at a liquid surface experience different forces from molecules in the interior.
+Capillary action depends on surface tension and interactions between a liquid and a solid surface.
+Density is mass per unit volume.
+Whether an object floats depends on gravity, buoyancy, and the densities of the object and surrounding fluid.
+Archimedes' principle states that buoyant force equals the weight of the displaced fluid.
+A wave can transfer energy without transporting the surrounding material over the same long distance.
+Wavelength is the spatial distance between neighboring points at the same phase.
+Frequency measures how many oscillations occur per unit time.
+For a wave traveling at a fixed speed, higher frequency corresponds to shorter wavelength.
+Waves can add together when they overlap.
+Interference results from the superposition of waves.
+Diffraction occurs when waves spread after passing through an opening or around an obstacle.
+Polarization describes the orientation of oscillations in a transverse wave.
+Light usually changes speed when it enters a material with a different refractive index.
+Refraction is the change in direction that can occur when light passes between different media.
+A converging lens can bring parallel rays toward a focus.
+A diverging lens causes parallel rays to spread apart.
+Microscopes use optical systems to enlarge images of small objects.
+Telescopes collect light from distant objects and form images for observation.
+Electrical resistance describes opposition to electric current.
+Under suitable conditions, current is proportional to voltage and inversely proportional to resistance.
+Components connected in series carry the same current through each component.
+Branches connected in parallel have the same voltage across their endpoints.
+Electrical power measures the rate at which electrical energy is transferred or converted.
+A capacitor stores energy in an electric field.
+An inductor stores energy associated with a magnetic field.
+Alternating current changes direction periodically.
+Transformers use electromagnetic induction to change alternating voltages.
+Electromagnetic induction occurs when a changing magnetic flux produces an electromotive force.
+Semiconductors have electrical properties between those of typical conductors and insulators.
+Doping can modify the electrical behavior of a semiconductor.
+A diode generally allows current to flow more easily in one direction than the other.
+A transistor can act as an electronic switch or an amplifier.
+Modern processors contain enormous numbers of transistors.
+Quantum mechanics describes physical behavior on atomic and subatomic scales.
+The state of a quantum system can be represented by a wavefunction or related mathematical description.
+Quantum measurements are often predicted in terms of probabilities.
+Light displays wave behavior and can also exchange energy in discrete packets called photons.
+Electrons also exhibit wave-like and particle-like behavior.
+The uncertainty principle limits how precisely certain pairs of physical quantities can be specified together.
+Electrons in atoms occupy allowed quantum energy states.
+Atoms can absorb or emit particular amounts of energy when electrons change between allowed states.
+Lasers can produce highly directional and coherent light.
+Relativity changed scientific ideas about space, time, energy, and gravity.
+Special relativity states that the speed of light in vacuum is the same for all inertial observers.
+At speeds close to the speed of light, measurements of time and distance show relativistic effects.
+Mass and energy are deeply related.
+General relativity describes gravity through the geometry of spacetime and the distribution of matter and energy.
+Gravitational waves are propagating disturbances in spacetime curvature.
+Cosmic expansion means that the average separation between distant galaxies increases with time.
+Astronomical redshift helps scientists study the expansion of the universe.
+The cosmic microwave background is ancient radiation left from the early universe.
+Dark matter does not emit much ordinary light, but its gravitational effects influence galaxies and gravitational lensing.
+An exoplanet is a planet that orbits a star other than the Sun.
+The transit method can detect some exoplanets by measuring periodic decreases in a star's brightness.
+A pulsar is a rapidly rotating neutron star that produces regular pulses of electromagnetic radiation.
+A star's mass strongly influences how it evolves.
+Some elements up to iron can be produced through fusion processes inside stars.
+Many elements heavier than iron require more extreme astrophysical processes for their formation.
+Chemical bonds arise from electron distributions and quantum interactions between atoms.
+A covalent bond commonly involves the sharing of electrons between atoms.
+An ionic bond is associated with electrostatic attraction between oppositely charged ions.
+Metallic bonding helps explain the conductivity and malleability of many metals.
+The periodic table arranges chemical elements by atomic number.
+Elements in the same group often have related valence-electron structures and similar chemical behavior.
+A solution contains one or more solutes dispersed in a solvent.
+Concentration measures the amount of solute in a specified amount of solution or solvent.
+A saturated solution cannot dissolve additional solute under the same conditions.
+Solubility can depend on temperature, pressure, and the chemical nature of the substances.
+In the Brønsted-Lowry model, acids donate protons and bases accept protons.
+The pH scale is commonly used to describe the acidity of aqueous solutions.
+Redox reactions involve electron transfer or changes in oxidation state.
+Electrolysis uses electrical energy to drive certain nonspontaneous chemical reactions.
+A catalyst provides an alternative reaction pathway with a lower activation energy.
+Polymers are large molecules built from many linked repeating or related molecular units.
+Plastics, rubber, proteins, and DNA can all be studied as macromolecular materials.
+The cell membrane contains lipids and proteins that regulate movement of substances into and out of the cell.
+Mitochondria participate in energy conversion in many eukaryotic cells.
+Ribosomes build proteins according to genetic instructions.
+Chromosomes are structures made of DNA and associated proteins.
+Human body cells usually contain chromosomes in pairs.
+Meiosis produces reproductive cells with half the usual chromosome number.
+A genetic mutation is a change in a DNA sequence.
+Mutations can be neutral, harmful, or beneficial depending on their effects and environment.
+A phenotype is influenced by both genetic and environmental factors.
+Gene expression controls when, where, and how strongly genetic information is used.
+Stem cells can self-renew and can differentiate into other cell types under suitable conditions.
+Neurotransmitters are chemical messengers used by nervous systems.
+A synapse is a junction where a neuron communicates with another cell.
+Learning can be accompanied by changes in the strength and activity of neural connections.
+The hippocampus is important for several forms of memory formation.
+The cerebellum contributes to coordination, balance, and motor learning.
+The kidneys filter blood and regulate water, salts, and acid-base balance.
+The liver participates in metabolism, detoxification, storage, and synthesis of many important molecules.
+The pancreas has digestive functions and also produces hormones involved in blood glucose regulation.
+Hormones are chemical signals that coordinate processes in different parts of the body.
+The human microbiome includes microorganisms living on and inside the body.
+The composition of the microbiome can be influenced by diet, environment, medication, and age.
+The immune system includes rapid innate defenses and highly specific adaptive responses.
+Antibodies can recognize particular molecular structures called antigens.
+Allergies occur when the immune system overreacts to substances that are usually harmless.
+Cell division is tightly regulated, and loss of this regulation can contribute to cancer.
+Cancer is not one disease but a large group of diseases involving abnormal cell growth and spread.
+Microorganisms can use fermentation to produce acids, alcohols, and other metabolic products.
+Yeasts are fungi, and some species are widely used in baking and food fermentation.
+Fungi form a biological kingdom distinct from plants and animals.
+Lichens are stable partnerships involving fungi and photosynthetic organisms such as algae or cyanobacteria.
+Most salts in seawater ultimately come from weathering of rocks and geological processes.
+Ocean salinity varies from one region to another.
+Earth's rotation produces Coriolis effects in large-scale atmospheric and oceanic motion.
+The ozone layer absorbs much of the Sun's high-energy ultraviolet radiation.
+The troposphere is the lowest major layer of the atmosphere and contains most weather.
+The stratosphere lies above the troposphere and contains the region of highest ozone concentration.
+Wind is air moving relative to Earth's surface and is strongly influenced by pressure differences.
+Different rates of heating over land and water can produce local sea breezes and land breezes.
+Lightning rapidly heats nearby air, causing expansion that produces thunder.
+Earth's magnetic field deflects some charged particles arriving from the Sun.
+Auroras result from interactions among solar particles, Earth's magnetic field, and the upper atmosphere.
+Tectonic plates usually move only a few centimeters per year.
+Mid-ocean ridges are major regions where new oceanic crust forms.
+At a subduction zone, one tectonic plate descends beneath another.
+Seismic waves allow scientists to infer the structure of Earth's interior.
+P waves can travel through solids and liquids, while S waves cannot travel through liquids.
+A central processing unit executes instructions and performs many calculations.
+A cache stores frequently used data close to a processor to reduce access delay.
+Random-access memory normally loses its stored contents when electrical power is removed.
+An operating system manages processors, memory, storage devices, and peripheral hardware.
+A file system defines how data is organized, named, stored, and retrieved.
+A database stores and manages information in a structured way.
+Database indexes can speed up some queries at the cost of additional storage and update work.
+Compression algorithms reduce storage or transmission requirements by removing redundancy.
+Lossless compression can reconstruct the original data exactly.
+Lossy compression discards some information to achieve higher compression ratios.
+A checksum can help detect certain errors introduced during storage or transmission.
+Error-correcting codes add redundancy so that some data errors can be detected and repaired.
+Internet protocols define how devices address, package, route, and deliver data.
+The Domain Name System maps human-readable domain names to network address information.
+Encryption transforms readable information so that only authorized parties with suitable keys can recover it.
+A hash function maps input data of arbitrary length to a fixed-length digest.
+A cryptographic hash function should make it computationally difficult to reconstruct the original input from the digest.
+Public-key cryptography uses mathematically related keys with different roles.
+Digital signatures can verify message origin and detect unauthorized modification.
+A training set is used to fit model parameters, while a validation set helps choose models and hyperparameters.
+Cross-validation can estimate generalization more efficiently when data is limited.
+Regularization reduces overfitting by discouraging excessive model complexity.
+The learning rate controls the size of parameter updates during optimization.
+Batch size affects training speed, memory use, and the noise in gradient estimates.
+Attention mechanisms allow a model to assign different importance to different input positions.
+Positional information helps a model distinguish the order and relative location of tokens.
+Pretraining learns broad patterns from large datasets, while fine-tuning adapts a model to more specific tasks.
+A control group provides a comparison baseline in an experiment.
+Double-blind experimental designs can reduce bias caused by expectations of participants and researchers.
+Replication helps determine whether a scientific result is robust.
+Peer review is one method the scientific community uses to evaluate methods, evidence, and conclusions.
+Measurement error can arise from instrument limitations, sampling, procedure, or model assumptions.
+Significant figures communicate an appropriate level of precision in measured quantities.
+A useful scientific theory explains existing evidence and makes predictions that can be tested.
+When a function is continuous at a point, inputs sufficiently close to that point produce outputs close to the function value there. Continuity connects local limits with actual function values and is a key condition behind many theorems in calculus.
+A random variable maps outcomes of a random experiment to numerical values. A probability distribution describes how likely those values are, while expectation and variance summarize long-run average behavior and variability. Different distributions model different kinds of random processes.
+Quantum entanglement occurs when the joint state of multiple quantum systems cannot be separated into independent states. Measurements on entangled particles can show strong correlations, but those correlations cannot be used to transmit controllable information faster than light.
+Chemical equilibrium is a dynamic state. Forward and reverse reactions continue, but at equal rates, so the macroscopic composition remains stable. Changing temperature or concentration can cause the system to establish a new equilibrium.
+Cells coordinate energy production and biosynthesis through metabolic networks. Glucose, fatty acids, and amino acids can enter shared metabolic pathways through different routes, while hormones and enzyme activities regulate those pathways according to physiological conditions.
+Ocean circulation transports heat from one region to another. Surface circulation is strongly influenced by winds and Earth's rotation, while deep circulation also depends on density differences caused by temperature and salinity. The ocean is therefore a major component of the global climate system.
+An operating system manages computer resources through mechanisms such as processes, virtual memory, and file systems. It must let multiple programs share processors and memory efficiently while isolating failures so that one application does not damage the entire system.
+A distributed system cannot assume that the network is always reliable. Requests may be delayed, duplicated, or lost, and remote machines may fail during execution. Retries, idempotency, replication, and consistency protocols are therefore central to reliable service design.
+Correlation describes a statistical association between variables, but it does not by itself establish causation. To determine whether intervening on one variable changes another, researchers must consider confounding factors, study design, and reasonable assumptions about how the data were generated.
+A test set should remain as independent as possible and be used only for final evaluation on unseen data. If a model is repeatedly modified in response to test results, the test set gradually becomes part of the development process and the reported score can overestimate true generalization.
