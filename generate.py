@@ -7,7 +7,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 BASE_DIR = Path(__file__).resolve().parent
 MODEL_DIR = BASE_DIR / "checkpoints" / "best"
-DEFAULT_PROMPT = "中国的首都是"
+DEFAULT_PROMPT = "地球围绕"
 MAX_NEW_TOKENS = 30
 
 

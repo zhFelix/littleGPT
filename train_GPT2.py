@@ -155,12 +155,13 @@ def load_checkpoint(
     device: torch.device,
     expected_block_size: int,
     expected_vocab_size: int,
-) -> tuple[GPT2LMHeadModel, dict[str, object]]:
+) -> tuple[GPT2LMHeadModel, dict[str, object], bool]:
     trainer_state = torch.load(checkpoint_path / "trainer_state.pt", map_location=device)
     checkpoint_block_size = int(trainer_state["block_size"])
-    if checkpoint_block_size != expected_block_size:
+    if checkpoint_block_size > expected_block_size:
         raise ValueError(
-            f"Checkpoint block_size={checkpoint_block_size} 与当前 block_size={expected_block_size} 不一致，请删除旧 checkpoint 后重新训练。"
+            f"Checkpoint block_size={checkpoint_block_size} 大于当前 block_size={expected_block_size}，"
+            "暂不支持缩小位置嵌入，请删除旧 checkpoint 后重新训练。"
         )
     checkpoint_vocab_size = int(trainer_state.get("vocab_size", expected_vocab_size))
     if checkpoint_vocab_size != expected_vocab_size:
@@ -168,8 +169,67 @@ def load_checkpoint(
             f"Checkpoint vocab_size={checkpoint_vocab_size} 与当前 tokenizer vocab_size={expected_vocab_size} 不一致，请删除旧 checkpoint 后重新训练。"
         )
 
-    model = AutoModelForCausalLM.from_pretrained(checkpoint_path).to(device)
-    return model, trainer_state
+    checkpoint_model = AutoModelForCausalLM.from_pretrained(checkpoint_path)
+    if checkpoint_block_size == expected_block_size:
+        return checkpoint_model.to(device), trainer_state, False
+
+    print(
+        f"Expanding position embeddings from {checkpoint_block_size} to {expected_block_size} "
+        f"using checkpoint: {checkpoint_path}"
+    )
+    model = expand_position_embeddings(checkpoint_model, expected_block_size)
+    return model.to(device), trainer_state, True
+
+
+def expand_position_embeddings(
+    checkpoint_model: GPT2LMHeadModel,
+    new_block_size: int,
+) -> GPT2LMHeadModel:
+    old_weight = checkpoint_model.transformer.wpe.weight.detach()
+    old_block_size, hidden_size = old_weight.shape
+    if new_block_size <= old_block_size:
+        raise ValueError("new_block_size 必须大于旧的位置嵌入大小。")
+
+    new_config = GPT2Config(**checkpoint_model.config.to_dict())
+    new_config.n_positions = new_block_size
+    new_config.n_ctx = new_block_size
+    new_model = GPT2LMHeadModel(new_config)
+
+    state_dict = checkpoint_model.state_dict()
+    filtered_state_dict = {
+        key: value
+        for key, value in state_dict.items()
+        if key != "transformer.wpe.weight" and ".attn.bias" not in key and ".attn.masked_bias" not in key
+    }
+    incompatible_keys = new_model.load_state_dict(filtered_state_dict, strict=False)
+    unexpected_keys = list(incompatible_keys.unexpected_keys)
+    missing_keys = [
+        key
+        for key in incompatible_keys.missing_keys
+        if key != "transformer.wpe.weight" and ".attn.bias" not in key and ".attn.masked_bias" not in key
+    ]
+    if unexpected_keys or missing_keys:
+        raise ValueError(
+            "Expanded checkpoint load found unexpected parameter mismatches: "
+            f"missing={missing_keys}, unexpected={unexpected_keys}"
+        )
+
+    expanded_weight = old_weight.new_empty(new_block_size, hidden_size)
+    expanded_weight[:old_block_size] = old_weight
+
+    # Preserve the original learned positions exactly, then interpolate only the extra rows.
+    target_positions = torch.linspace(0, old_block_size - 1, steps=new_block_size, device=old_weight.device)[old_block_size:]
+    left_indices = torch.floor(target_positions).long()
+    right_indices = torch.clamp(left_indices + 1, max=old_block_size - 1)
+    interpolation_ratio = (target_positions - left_indices.to(target_positions.dtype)).unsqueeze(1)
+    expanded_weight[old_block_size:] = (
+        old_weight[left_indices] * (1.0 - interpolation_ratio) + old_weight[right_indices] * interpolation_ratio
+    )
+
+    with torch.no_grad():
+        new_model.transformer.wpe.weight.copy_(expanded_weight)
+
+    return new_model
 
 
 def resolve_eval_dir(eval_dir_arg: str | None) -> Path | None:
@@ -316,12 +376,13 @@ def main() -> None:
     best_eval_loss: float | None = None
     best_epoch = 0
     epochs_without_improvement = 0
+    position_embeddings_expanded = False
 
     if latest_checkpoint is None:
         model = build_model(tokenizer, effective_block_size).to(device)
         print("No checkpoint found, training from scratch.")
     else:
-        model, trainer_state = load_checkpoint(
+        model, trainer_state, position_embeddings_expanded = load_checkpoint(
             latest_checkpoint,
             device,
             effective_block_size,
@@ -336,8 +397,10 @@ def main() -> None:
         print(f"Resuming from checkpoint: {latest_checkpoint}")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
-    if latest_checkpoint is not None:
+    if latest_checkpoint is not None and not position_embeddings_expanded:
         optimizer.load_state_dict(trainer_state["optimizer_state_dict"])
+    elif position_embeddings_expanded:
+        print("Skipping optimizer state restore because position embeddings were expanded for this resume.")
 
     for param_group in optimizer.param_groups:
         param_group["lr"] = args.learning_rate
