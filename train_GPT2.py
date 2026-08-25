@@ -1,6 +1,7 @@
 from pathlib import Path
 import argparse
 import json
+import shutil
 
 import torch
 from torch.utils.data import DataLoader, Dataset
@@ -165,6 +166,33 @@ def save_checkpoint(
         trainer_state.update(extra_state)
     torch.save(trainer_state, checkpoint_path / "trainer_state.pt")
     print(f"Checkpoint saved to: {checkpoint_path}")
+
+
+def sync_best_model(
+    model: GPT2LMHeadModel,
+    tokenizer: AutoTokenizer,
+    optimizer: torch.optim.Optimizer,
+    epoch: int,
+    block_size: int,
+    best_eval_loss: float,
+) -> None:
+    save_checkpoint(
+        OUTPUT_DIR,
+        model,
+        tokenizer,
+        optimizer,
+        epoch,
+        block_size,
+        {
+            "best_eval_loss": best_eval_loss,
+            "best_epoch": epoch,
+            "epochs_without_improvement": 0,
+            "is_best_checkpoint": True,
+            "source_checkpoint_dir": str(BEST_CHECKPOINT_DIR),
+            "synced_from_best_checkpoint": True,
+        },
+    )
+    print(f"Best model synced to: {OUTPUT_DIR} (epoch={epoch}, eval_loss={best_eval_loss:.4f})")
 
 
 def load_checkpoint(
@@ -498,6 +526,14 @@ def main() -> None:
                         "is_best_checkpoint": True,
                     },
                 )
+                sync_best_model(
+                    model,
+                    tokenizer,
+                    optimizer,
+                    current_epoch,
+                    effective_block_size,
+                    best_eval_loss,
+                )
                 print(f"New best checkpoint: {BEST_CHECKPOINT_DIR} (epoch={best_epoch}, eval_loss={best_eval_loss:.4f})")
             else:
                 epochs_without_improvement += 1
@@ -539,6 +575,7 @@ def main() -> None:
         best_tokenizer = AutoTokenizer.from_pretrained(BEST_CHECKPOINT_DIR)
         best_model.save_pretrained(OUTPUT_DIR)
         best_tokenizer.save_pretrained(OUTPUT_DIR)
+        shutil.copy2(BEST_CHECKPOINT_DIR / "trainer_state.pt", OUTPUT_DIR / "trainer_state.pt")
         print(
             f"Best model saved to: {OUTPUT_DIR} "
             f"(source={BEST_CHECKPOINT_DIR}, epoch={best_epoch}, eval_loss={best_eval_loss:.4f})"
