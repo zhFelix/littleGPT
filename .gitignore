@@ -3,9 +3,7 @@ __pycache__/
 .DS_Store
 
 checkpoints/
-trained_model/trainer_state.pt
-trained_model/.git/
-trained_model/.git.bak/
+trained_model/
 tokenizer/
 
 train.log
