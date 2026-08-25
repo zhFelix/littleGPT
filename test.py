@@ -8,7 +8,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 BASE_DIR = Path(__file__).resolve().parent
-MODEL_DIR = BASE_DIR / "trained_model"
+MODEL_DIR = BASE_DIR / "checkpoints" / "best"
 TEST_DIR = BASE_DIR / "test"
 TEST_FILES = ["chinese", "english"]
 DEFAULT_PROMPTS = [
