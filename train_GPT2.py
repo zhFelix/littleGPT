@@ -14,7 +14,7 @@ TOKENIZER_DIR = BASE_DIR / "tokenizer"
 OUTPUT_DIR = BASE_DIR / "trained_model"
 CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
-DATASETS = ["chinese", "english"]
+DATASETS = ["chinese", "english", "article"]
 
 BLOCK_SIZE = 96
 BATCH_SIZE = 4
