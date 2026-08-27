@@ -9,7 +9,7 @@ from transformers import PreTrainedTokenizerFast
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "train"
 OUTPUT_DIR = BASE_DIR / "tokenizer"
-DATASETS = ["chinese", "english"]
+DATASETS = ["chinese", "english", "article"]
 VOCAB_SIZE = 10000
 MODEL_MAX_LENGTH = 256
 SPECIAL_TOKENS = ["<|pad|>", "<|unk|>", "<|bos|>", "<|eos|>"]
