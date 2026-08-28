@@ -219,18 +219,5 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 ## 当前已知注意事项
 
 1. 脚本当前只会自动读取 `chinese` 和 `english` 这两个数据集名。
-2. `train/dynamtic earth.txt` 当前不会参与训练，除非把脚本中的数据集列表扩展进去。
-3. `generate.py` 和 `test.py` 默认读取 `checkpoints/best`，所以第一次生成前需要先完成训练。
-4. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
-
-## 适合继续优化的方向
-
-- 增加 `requirements.txt` 或 `pyproject.toml`
-- 把训练参数抽到配置文件
-- 补充更清晰的数据准备说明
-- 增加更系统的评测指标和实验记录
-- 让数据集名和数据目录可配置
-
-## 一句话总结
-
-如果你想快速理解一个小型 GPT-2 项目从分词器训练到模型训练、生成和评测的完整闭环，这个仓库就是一个很直接的起点。
+2. `generate.py` 和 `test.py` 默认读取 `checkpoints/best`，所以第一次生成前需要先完成训练。
+3. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
