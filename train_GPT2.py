@@ -11,7 +11,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer, GPT2Config, GPT2LM
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "train"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
-OUTPUT_DIR = BASE_DIR / "trained_model"
+OUTPUT_DIR = BASE_DIR / "littleGPT_model"
 CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
 DATASETS = ["chinese", "english", "article"]
