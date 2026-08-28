@@ -155,10 +155,16 @@ python train_GPT2.py
 常用参数示例：
 
 ```bash
-python train_GPT2.py --epochs 30 --batch-size 8 --block-size 96 --learning-rate 5e-5
+python train_GPT2.py --epochs 30 --batch-size 8 --block-size 96 --learning-rate 5e-5 --early-stopping-patience 3 --save-checkpoint-every 5
 ```
+- --epochs：表示这次训练中要训练多少轮
+- --batch-size：表示模型在一次前向传播（推理）或一次梯度更新（训练）中，同时处理的“样本/序列”的数量。
+- --block-size：表示这次训练的上下文长度
+- --learning-rate：表示这次训练的学习率
+- --early-stopping-patience 3：表示在评估级重复多少次没有改善就停止训练
+ - --save-checkpoint-every：表示这次训练训练多少轮保存一次
 
-训练过程中会生成：
+训练过程中会生成
 
 - `checkpoints/`
 - `checkpoints/best/`

@@ -7,3 +7,5 @@ trained_model/
 tokenizer/
 
 train.log
+
+.venv
