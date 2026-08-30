@@ -100,7 +100,7 @@ littleGPT/
 {"id": "train-zh-0001", "split": "train", "language": "zh", "domain": "geography", "topic": "china_geography", "text": "中国的首都是北京。"}
 ```
 
-除了 `text` 外，其他字段当前不会参与训练，但适合后续做数据分析或筛选。
+除了 `text` 外，其他字段当前不会参与训练，但可以后续做数据分析或筛选。
 
 ### 2. TXT
 
