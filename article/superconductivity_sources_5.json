@@ -1,0 +1,42 @@
+[
+  {
+    "id": "sc-en-001",
+    "title": "DOE Explains...Superconductivity",
+    "url": "https://www.energy.gov/science/doe-explainssuperconductivity",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "superconductivity_basics"
+  },
+  {
+    "id": "sc-en-002",
+    "title": "Cracking the Mystery of Perfect Efficiency: Investigating Superconductors",
+    "url": "https://www.energy.gov/science/articles/cracking-mystery-perfect-efficiency-investigating-superconductors",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "superconductivity_history_and_mechanisms"
+  },
+  {
+    "id": "sc-en-003",
+    "title": "Investigating High-Temperature Superconductors",
+    "url": "https://www.energy.gov/science/articles/investigating-high-temperature-superconductors",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "high_temperature_superconductors"
+  },
+  {
+    "id": "sc-en-004",
+    "title": "Scientists Observe Long-Predicted Superconductor Property Using a Quantum Simulator",
+    "url": "https://www.nist.gov/news-events/news/2024/02/scientists-observe-long-predicted-superconductor-property-using-quantum",
+    "source": "National Institute of Standards and Technology",
+    "domain": "physics",
+    "topic": "superconductor_quantum_simulator"
+  },
+  {
+    "id": "sc-en-005",
+    "title": "Newfound Superconductor Material Could Be the ‘Silicon of Quantum Computers’",
+    "url": "https://www.nist.gov/news-events/news/2019/08/newfound-superconductor-material-could-be-silicon-quantum-computers",
+    "source": "National Institute of Standards and Technology",
+    "domain": "physics",
+    "topic": "uranium_ditelluride_superconductivity"
+  }
+]
