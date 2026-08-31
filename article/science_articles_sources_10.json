@@ -1,0 +1,82 @@
+[
+  {
+    "id": "science-en-001",
+    "title": "How Do We Know There Are Black Holes?",
+    "url": "https://science.nasa.gov/mission/webb/science-overview/science-explainers/how-do-we-know-there-are-black-holes/",
+    "source": "NASA Science",
+    "domain": "astronomy",
+    "topic": "black_hole_evidence"
+  },
+  {
+    "id": "science-en-002",
+    "title": "Exoplanets",
+    "url": "https://science.nasa.gov/exoplanets/",
+    "source": "NASA Science",
+    "domain": "astronomy",
+    "topic": "exoplanets"
+  },
+  {
+    "id": "science-en-003",
+    "title": "DOE Explains...Dark Matter",
+    "url": "https://www.energy.gov/science/doe-explainsdark-matter",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "dark_matter"
+  },
+  {
+    "id": "science-en-004",
+    "title": "What is Ocean Acidification?",
+    "url": "https://oceanservice.noaa.gov/facts/acidification.html",
+    "source": "NOAA",
+    "domain": "earth_science",
+    "topic": "ocean_acidification"
+  },
+  {
+    "id": "science-en-005",
+    "title": "What's the Difference Between a Tide and a Current?",
+    "url": "https://oceanservice.noaa.gov/facts/tidescurrents.html",
+    "source": "NOAA",
+    "domain": "earth_science",
+    "topic": "tides_and_currents"
+  },
+  {
+    "id": "science-en-006",
+    "title": "Groundwater Flow and the Water Cycle",
+    "url": "https://www.usgs.gov/special-topics/water-science-school/science/groundwater-flow-and-water-cycle",
+    "source": "U.S. Geological Survey",
+    "domain": "earth_science",
+    "topic": "groundwater_flow"
+  },
+  {
+    "id": "science-en-007",
+    "title": "Explaining How Vaccines Work",
+    "url": "https://www.cdc.gov/vaccines/basics/explaining-how-vaccines-work.html",
+    "source": "CDC",
+    "domain": "biology",
+    "topic": "how_vaccines_work"
+  },
+  {
+    "id": "science-en-008",
+    "title": "About Antimicrobial Resistance",
+    "url": "https://www.cdc.gov/antimicrobial-resistance/about/index.html",
+    "source": "CDC",
+    "domain": "biology",
+    "topic": "antimicrobial_resistance"
+  },
+  {
+    "id": "science-en-009",
+    "title": "DOE Explains...Batteries",
+    "url": "https://www.energy.gov/science/doe-explainsbatteries",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "batteries"
+  },
+  {
+    "id": "science-en-010",
+    "title": "Quantum Computing Explained",
+    "url": "https://www.nist.gov/quantum-information-science/quantum-computing-explained",
+    "source": "National Institute of Standards and Technology",
+    "domain": "computer_science",
+    "topic": "quantum_computing"
+  }
+]

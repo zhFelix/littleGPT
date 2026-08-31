@@ -15,7 +15,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "Chrome/120.0 Safari/537.36"
 }
-SOURCES_FILE = "article/superconductivity_sources_5.json"
+SOURCES_FILE = "article/science_articles_sources_10.json"
 OUT_FILE = "train/article.jsonl"
 
 TARGET = 230     # 目标块长度
