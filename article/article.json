@@ -1,0 +1,122 @@
+[
+  {
+    "id": "science-en-011",
+    "title": "DOE Explains...Particle Accelerators",
+    "url": "https://www.energy.gov/science/doe-explainsparticle-accelerators",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "particle_accelerators"
+  },
+  {
+    "id": "science-en-012",
+    "title": "DOE Explains...Plasma",
+    "url": "https://www.energy.gov/science/doe-explainsplasma",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "plasma"
+  },
+  {
+    "id": "science-en-013",
+    "title": "DOE Explains...Burning Plasma",
+    "url": "https://www.energy.gov/science/doe-explainsburning-plasma",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "burning_plasma"
+  },
+  {
+    "id": "science-en-014",
+    "title": "DOE Explains...Plasma Confinement",
+    "url": "https://www.energy.gov/science/doe-explainsplasma-confinement",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "plasma_confinement"
+  },
+  {
+    "id": "science-en-015",
+    "title": "DOE Explains...Fusion Energy Science",
+    "url": "https://www.energy.gov/science/doe-explainsfusion-energy-science",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "fusion_energy_science"
+  },
+  {
+    "id": "science-en-016",
+    "title": "DOE Explains...High Energy Density Plasmas",
+    "url": "https://www.energy.gov/science/doe-explainshigh-energy-density-laboratory-plasmas",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "high_energy_density_plasmas"
+  },
+  {
+    "id": "science-en-017",
+    "title": "DOE Explains...Bosons and Fermions",
+    "url": "https://www.energy.gov/science/doe-explainsbosons-and-fermions",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "bosons_and_fermions"
+  },
+  {
+    "id": "science-en-018",
+    "title": "DOE Explains...Quarks and Gluons",
+    "url": "https://www.energy.gov/science/doe-explainsquarks-and-gluons",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "quarks_and_gluons"
+  },
+  {
+    "id": "science-en-019",
+    "title": "DOE Explains...The Standard Model of Particle Physics",
+    "url": "https://www.energy.gov/science/doe-explainsthe-standard-model-particle-physics",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "standard_model_particle_physics"
+  },
+  {
+    "id": "science-en-020",
+    "title": "DOE Explains...Relativity",
+    "url": "https://www.energy.gov/science/doe-explainsrelativity",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "relativity"
+  },
+  {
+    "id": "science-en-021",
+    "title": "DOE Explains...Quantum Mechanics",
+    "url": "https://www.energy.gov/science/doe-explainsquantum-mechanics",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "quantum_mechanics"
+  },
+  {
+    "id": "science-en-022",
+    "title": "DOE Explains...Quantum Chromodynamics",
+    "url": "https://www.energy.gov/science/doe-explainsquantum-chromodynamics",
+    "source": "U.S. Department of Energy",
+    "domain": "physics",
+    "topic": "quantum_chromodynamics"
+  },
+  {
+    "id": "science-en-023",
+    "title": "DOE Explains...Neutron Stars",
+    "url": "https://www.energy.gov/science/doe-explainsneutron-stars",
+    "source": "U.S. Department of Energy",
+    "domain": "astronomy",
+    "topic": "neutron_stars"
+  },
+  {
+    "id": "science-en-024",
+    "title": "DOE Explains...Nucleosynthesis",
+    "url": "https://www.energy.gov/science/doe-explainsnucleosynthesis",
+    "source": "U.S. Department of Energy",
+    "domain": "astronomy",
+    "topic": "nucleosynthesis"
+  },
+  {
+    "id": "science-en-025",
+    "title": "DOE Explains...Nanoscience",
+    "url": "https://www.energy.gov/science/doe-explainsnanoscience",
+    "source": "U.S. Department of Energy",
+    "domain": "materials_science",
+    "topic": "nanoscience"
+  }
+]

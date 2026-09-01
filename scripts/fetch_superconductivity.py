@@ -15,7 +15,7 @@ HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 "
     "Chrome/120.0 Safari/537.36"
 }
-SOURCES_FILE = "article/science_articles_sources_10.json"
+SOURCES_FILE = "article/article.json"
 OUT_FILE = "train/article.jsonl"
 
 TARGET = 230     # 目标块长度
@@ -46,6 +46,21 @@ def split_sentences(text: str) -> list[str]:
             continue
         # 过滤导航/版权/分享类噪音（含常见无正文结尾词）
         if re.search(r"(^related links|^tags:|^subscribe|cookie|all rights reserved|share this)", p, re.I):
+            continue
+        # 过滤政府网站 boilerplate：页脚说明、跳转提示、通讯作者简介/联系方式、引用URL
+        if re.search(
+            r"(^DOE Explains offers straightforward|"
+            r"^It also describes how these concepts apply|"
+            r"Skip to main content|"
+            r"official websites use \.gov|"
+            r"writes and curates content|"
+            r"communications specialist in the Vehicle|"
+            r"For more information please visit|"
+            r"Shannon Brescher Shea|"
+            r"^https?://)",
+            p,
+            re.I,
+        ):
             continue
         out.append(p)
     return out
