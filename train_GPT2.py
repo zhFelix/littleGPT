@@ -89,7 +89,7 @@ class RandomWindowDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
-        rng = random.Random((self.seed, self.epoch, index))
+        rng = random.Random(str((self.seed, self.epoch, index)))
         start = rng.randint(0, self.max_start)
         block = self.ids[start : start + self.block_size + 1]
         input_ids = block[:-1]
