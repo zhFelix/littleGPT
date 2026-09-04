@@ -33,6 +33,7 @@ WARMUP_RATIO = 0.1
 MODEL_EMBED_DIM = 384
 MODEL_LAYER_COUNT = 6
 MODEL_HEAD_COUNT = 6
+MODEL_DROPOUT = 0.2  # 数据量小的场景下比默认 0.1 更抗过拟合；数据量大幅增加后仍可保留
 SAVE_CHECKPOINT_EVERY = 20
 EVAL_EVERY = 1
 EARLY_STOPPING_PATIENCE = 0
@@ -108,6 +109,9 @@ def build_model_config(tokenizer: AutoTokenizer, block_size: int) -> GPT2Config:
         n_embd=MODEL_EMBED_DIM,
         n_layer=MODEL_LAYER_COUNT,
         n_head=MODEL_HEAD_COUNT,
+        resid_pdrop=MODEL_DROPOUT,
+        embd_pdrop=MODEL_DROPOUT,
+        attn_pdrop=MODEL_DROPOUT,
         bos_token_id=tokenizer.bos_token_id,
         eos_token_id=tokenizer.eos_token_id,
     )
