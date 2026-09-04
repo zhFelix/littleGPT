@@ -1,11 +1,18 @@
 from pathlib import Path
 import argparse
 import json
+import random
 import shutil
 
 import torch
 from torch.utils.data import DataLoader, Dataset
-from transformers import AutoModelForCausalLM, AutoTokenizer, GPT2Config, GPT2LMHeadModel
+from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
+    GPT2Config,
+    GPT2LMHeadModel,
+    get_cosine_schedule_with_warmup,
+)
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -20,6 +27,9 @@ BLOCK_SIZE = 96
 BATCH_SIZE = 4
 EPOCHS = 20
 LEARNING_RATE = 5e-5
+WEIGHT_DECAY = 0.1
+GRAD_CLIP_NORM = 1.0
+WARMUP_RATIO = 0.1
 MODEL_EMBED_DIM = 384
 MODEL_LAYER_COUNT = 6
 MODEL_HEAD_COUNT = 6
@@ -47,6 +57,42 @@ class TextBlockDataset(Dataset):
         block = self.samples[index]
         input_ids = torch.tensor(block[:-1], dtype=torch.long)
         labels = torch.tensor(block[1:], dtype=torch.long)
+        attention_mask = torch.ones_like(input_ids)
+        return {
+            "input_ids": input_ids,
+            "attention_mask": attention_mask,
+            "labels": labels,
+        }
+
+
+class RandomWindowDataset(Dataset):
+    """对整条连续 token 流做随机窗口采样（token 级随机起点）。
+
+    - 每条 token 在采样窗口中的可达概率一致 -> 天然按 token 占比均衡语料，
+      所有文档（含短中文）都保留，不因 block_size 过滤而丢数据；
+    - 同一数据流每轮以不同起点出现 -> 天然实现随机窗口数据增强，
+      缓解"固定块每轮重复"导致的快速过拟合。
+    """
+
+    def __init__(self, input_ids: list[int], block_size: int, seed: int = 42) -> None:
+        if len(input_ids) < block_size + 1:
+            raise ValueError("文本太短，无法切出训练窗口。请增大语料或减小 BLOCK_SIZE。")
+        self.ids = torch.tensor(input_ids, dtype=torch.long)
+        self.block_size = block_size
+        self.num_samples = max(1, (len(input_ids) - block_size) // block_size)
+        self.max_start = len(input_ids) - (block_size + 1)
+        self.epoch = 0
+        self.seed = seed
+
+    def __len__(self) -> int:
+        return self.num_samples
+
+    def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
+        rng = random.Random((self.seed, self.epoch, index))
+        start = rng.randint(0, self.max_start)
+        block = self.ids[start : start + self.block_size + 1]
+        input_ids = block[:-1]
+        labels = block[1:]
         attention_mask = torch.ones_like(input_ids)
         return {
             "input_ids": input_ids,
@@ -97,8 +143,9 @@ def collect_training_files() -> list[Path]:
     return collect_dataset_files(DATA_DIR)
 
 
-def load_text_from_files(files: list[Path]) -> str:
-    texts: list[str] = []
+def load_docs_from_files(files: list[Path]) -> list[str]:
+    """读取各数据文件，返回文档（每条文本一个元素）列表，保留文档边界。"""
+    docs: list[str] = []
     for path in files:
         if path.suffix == ".jsonl":
             for line in path.read_text(encoding="utf-8").splitlines():
@@ -107,14 +154,25 @@ def load_text_from_files(files: list[Path]) -> str:
                 record = json.loads(line)
                 if "text" not in record:
                     raise ValueError(f"{path} 中的记录缺少 text 字段。")
-                texts.append(record["text"])
+                docs.append(record["text"])
         else:
-            texts.extend(line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip())
-    return "\n\n".join(texts)
+            docs.extend(
+                line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+            )
+    return docs
+
+
+def load_text_from_files(files: list[Path]) -> str:
+    return "\n\n".join(load_docs_from_files(files))
 
 
 def load_training_text(files: list[Path]) -> str:
     return load_text_from_files(files)
+
+
+def load_training_docs(files: list[Path]) -> list[str]:
+    """为语料均衡采样返回逐文档文本；仅用于训练侧。"""
+    return load_docs_from_files(files)
 
 
 def choose_block_size(input_ids: list[int], preferred_block_size: int) -> int:
@@ -373,6 +431,12 @@ def parse_args() -> argparse.Namespace:
         default=SAVE_CHECKPOINT_EVERY,
         help="Save a checkpoint every N epochs.",
     )
+    parser.add_argument(
+        "--warmup-ratio",
+        type=float,
+        default=WARMUP_RATIO,
+        help="Learning rate warmup as a fraction of total training steps.",
+    )
     return parser.parse_args()
 
 
@@ -394,6 +458,8 @@ def main() -> None:
         raise ValueError("--min-improvement 不能小于 0。")
     if args.save_checkpoint_every <= 0:
         raise ValueError("--save-checkpoint-every 必须大于 0。")
+    if not 0 <= args.warmup_ratio < 1:
+        raise ValueError("--warmup-ratio 必须在 [0, 1) 区间内。")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
@@ -402,10 +468,12 @@ def main() -> None:
     # We chunk the token ids ourselves below, so the full corpus can exceed model_max_length.
     tokenizer.model_max_length = 10_000_000
     training_files = collect_training_files()
-    text = load_training_text(training_files)
-    training_input_ids = tokenizer(text, add_special_tokens=True, return_attention_mask=False)["input_ids"]
+    training_docs = load_training_docs(training_files)
+    # 逐文档 tokenize 后拍平：每条文档自带 bos/eos 边界，短文档不丢失
+    training_doc_ids = tokenizer(training_docs, add_special_tokens=True, return_attention_mask=False)["input_ids"]
+    training_input_ids = [tok for doc in training_doc_ids for tok in doc]
     effective_block_size = choose_block_size(training_input_ids, args.block_size)
-    training_dataset = TextBlockDataset(training_input_ids, effective_block_size)
+    training_dataset = RandomWindowDataset(training_input_ids, effective_block_size)
     dataloader = DataLoader(training_dataset, batch_size=args.batch_size, shuffle=True)
 
     print(f"Training files: {len(training_files)}")
@@ -466,7 +534,7 @@ def main() -> None:
             model = build_model(tokenizer, effective_block_size).to(device)
             print("Training from scratch with the current smaller model configuration.")
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
     if latest_checkpoint is not None and not position_embeddings_expanded:
         optimizer.load_state_dict(trainer_state["optimizer_state_dict"])
     elif position_embeddings_expanded:
@@ -474,6 +542,16 @@ def main() -> None:
 
     for param_group in optimizer.param_groups:
         param_group["lr"] = args.learning_rate
+
+    # 余弦退火 + warmup：恒 lr 易加速过拟合，warmup 稳起步、退火让后期收敛更稳
+    steps_per_epoch = len(dataloader)
+    total_steps = max(0, (args.epochs - start_epoch) * steps_per_epoch)
+    num_warmup_steps = int(args.warmup_ratio * total_steps)
+    scheduler = get_cosine_schedule_with_warmup(
+        optimizer,
+        num_warmup_steps=num_warmup_steps,
+        num_training_steps=total_steps,
+    )
 
     if start_epoch >= args.epochs:
         print(
@@ -483,6 +561,7 @@ def main() -> None:
 
     model.train()
     for epoch in range(start_epoch, args.epochs):
+        training_dataset.epoch = epoch  # 每轮更新采样种子，保证窗口位置随轮次变化
         total_loss = 0.0
         for batch in dataloader:
             batch = {key: value.to(device) for key, value in batch.items()}
@@ -492,7 +571,9 @@ def main() -> None:
 
             optimizer.zero_grad()
             loss.backward()
+            torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=GRAD_CLIP_NORM)
             optimizer.step()
+            scheduler.step()
 
             total_loss += loss.item()
 
