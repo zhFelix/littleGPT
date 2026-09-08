@@ -89,7 +89,11 @@ class RandomWindowDataset(Dataset):
         return self.num_samples
 
     def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
-        rng = random.Random(str((self.seed, self.epoch, index)))
+        # 3.11+ 的 random.Random.seed 不再接受 tuple，需组合成确定性 int 种子
+        seed_int = (
+            (self.seed * 73856093) ^ (self.epoch * 19349663) ^ (index * 83492791)
+        )
+        rng = random.Random(seed_int)
         start = rng.randint(0, self.max_start)
         block = self.ids[start : start + self.block_size + 1]
         input_ids = block[:-1]
