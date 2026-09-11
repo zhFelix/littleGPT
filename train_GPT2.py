@@ -1,6 +1,7 @@
 from pathlib import Path
 import argparse
 import json
+import math
 import random
 import shutil
 
@@ -38,26 +39,32 @@ SAVE_CHECKPOINT_EVERY = 20
 EVAL_EVERY = 1
 EARLY_STOPPING_PATIENCE = 0
 MIN_IMPROVEMENT = 0.0
+TRAINING_OBJECTIVE_VERSION = 2  # v2: labels=input_ids，由 GPT2LMHeadModel 内部完成单次 shift
 
 
 class TextBlockDataset(Dataset):
+    """固定窗口数据集，用于验证。
+
+    labels 与 input_ids 完全相同。GPT2LMHeadModel 会在内部完成 causal LM 的
+    一位 shift，因此这里不能提前把 labels 右移，否则会形成 double shift。
+    """
+
     def __init__(self, input_ids: list[int], block_size: int) -> None:
         self.samples = []
-        if len(input_ids) < block_size + 1:
+        if len(input_ids) < block_size:
             raise ValueError("文本太短，无法切出训练样本。请增大语料或减小 BLOCK_SIZE。")
 
-        for start in range(0, len(input_ids) - block_size, block_size):
-            block = input_ids[start : start + block_size + 1]
-            if len(block) == block_size + 1:
+        for start in range(0, len(input_ids) - block_size + 1, block_size):
+            block = input_ids[start : start + block_size]
+            if len(block) == block_size:
                 self.samples.append(block)
 
     def __len__(self) -> int:
         return len(self.samples)
 
     def __getitem__(self, index: int) -> dict[str, torch.Tensor]:
-        block = self.samples[index]
-        input_ids = torch.tensor(block[:-1], dtype=torch.long)
-        labels = torch.tensor(block[1:], dtype=torch.long)
+        input_ids = torch.tensor(self.samples[index], dtype=torch.long)
+        labels = input_ids.clone()
         attention_mask = torch.ones_like(input_ids)
         return {
             "input_ids": input_ids,
@@ -76,12 +83,12 @@ class RandomWindowDataset(Dataset):
     """
 
     def __init__(self, input_ids: list[int], block_size: int, seed: int = 42) -> None:
-        if len(input_ids) < block_size + 1:
+        if len(input_ids) < block_size:
             raise ValueError("文本太短，无法切出训练窗口。请增大语料或减小 BLOCK_SIZE。")
         self.ids = torch.tensor(input_ids, dtype=torch.long)
         self.block_size = block_size
-        self.num_samples = max(1, (len(input_ids) - block_size) // block_size)
-        self.max_start = len(input_ids) - (block_size + 1)
+        self.num_samples = max(1, len(input_ids) // block_size)
+        self.max_start = len(input_ids) - block_size
         self.epoch = 0
         self.seed = seed
 
@@ -95,9 +102,8 @@ class RandomWindowDataset(Dataset):
         )
         rng = random.Random(seed_int)
         start = rng.randint(0, self.max_start)
-        block = self.ids[start : start + self.block_size + 1]
-        input_ids = block[:-1]
-        labels = block[1:]
+        input_ids = self.ids[start : start + self.block_size].clone()
+        labels = input_ids.clone()
         attention_mask = torch.ones_like(input_ids)
         return {
             "input_ids": input_ids,
@@ -108,7 +114,7 @@ class RandomWindowDataset(Dataset):
 
 def build_model_config(tokenizer: AutoTokenizer, block_size: int) -> GPT2Config:
     return GPT2Config(
-        vocab_size=tokenizer.vocab_size,
+        vocab_size=len(tokenizer),
         n_positions=block_size,
         n_embd=MODEL_EMBED_DIM,
         n_layer=MODEL_LAYER_COUNT,
@@ -179,12 +185,28 @@ def load_training_text(files: list[Path]) -> str:
 
 
 def load_training_docs(files: list[Path]) -> list[str]:
-    """为语料均衡采样返回逐文档文本；仅用于训练侧。"""
     return load_docs_from_files(files)
 
 
+def tokenize_docs_with_eos(tokenizer: AutoTokenizer, docs: list[str]) -> list[int]:
+    """逐文档 tokenize，并显式用 EOS 分隔文档。
+
+    不依赖 add_special_tokens=True 是否会自动插入 EOS，确保训练与验证使用
+    完全相同的文档边界规则。
+    """
+    if tokenizer.eos_token_id is None:
+        raise ValueError("tokenizer 未配置 eos_token_id，请先为 tokenizer 设置 EOS token。")
+
+    token_stream: list[int] = []
+    encoded_docs = tokenizer(docs, add_special_tokens=False, return_attention_mask=False)["input_ids"]
+    for doc_ids in encoded_docs:
+        token_stream.extend(doc_ids)
+        token_stream.append(tokenizer.eos_token_id)
+    return token_stream
+
+
 def choose_block_size(input_ids: list[int], preferred_block_size: int) -> int:
-    max_allowed = len(input_ids) - 1
+    max_allowed = len(input_ids)
     if max_allowed < 4:
         raise ValueError("文本太短，至少需要更多 token 才能训练。")
     return min(preferred_block_size, max_allowed)
@@ -195,16 +217,33 @@ def get_checkpoint_path(epoch: int) -> Path:
 
 
 def find_latest_checkpoint() -> Path | None:
+    """返回最新保存的可恢复 checkpoint，而不是优先返回 best。
+
+    epoch_* 与 best 都可能包含可恢复状态；按 trainer_state 中记录的 epoch
+    选择实际训练进度最大的那个。best 仍只用于最终模型选择。
+    """
     if not CHECKPOINT_DIR.exists():
         return None
 
-    checkpoints = sorted(
-        (path for path in CHECKPOINT_DIR.glob("epoch_*") if path.is_dir()),
-        key=lambda path: path.name,
-    )
-    if not checkpoints:
-        return None
-    return checkpoints[-1]
+    candidates = [path for path in CHECKPOINT_DIR.glob("epoch_*") if path.is_dir()]
+    if BEST_CHECKPOINT_DIR.is_dir():
+        candidates.append(BEST_CHECKPOINT_DIR)
+
+    latest_path: Path | None = None
+    latest_epoch = -1
+    for path in candidates:
+        state_path = path / "trainer_state.pt"
+        if not state_path.exists():
+            continue
+        try:
+            state = torch.load(state_path, map_location="cpu")
+            epoch = int(state.get("epoch", -1))
+        except Exception:
+            continue
+        if epoch > latest_epoch:
+            latest_epoch = epoch
+            latest_path = path
+    return latest_path
 
 
 def save_checkpoint(
@@ -215,6 +254,8 @@ def save_checkpoint(
     epoch: int,
     block_size: int,
     extra_state: dict[str, object] | None = None,
+    scheduler: torch.optim.lr_scheduler.LambdaLR | None = None,
+    global_step: int = 0,
 ) -> None:
     checkpoint_path.mkdir(parents=True, exist_ok=True)
     model.save_pretrained(checkpoint_path)
@@ -222,12 +263,16 @@ def save_checkpoint(
     trainer_state: dict[str, object] = {
         "epoch": epoch,
         "block_size": block_size,
-        "vocab_size": tokenizer.vocab_size,
+        "vocab_size": len(tokenizer),
         "model_n_embd": int(model.config.n_embd),
         "model_n_layer": int(model.config.n_layer),
         "model_n_head": int(model.config.n_head),
         "optimizer_state_dict": optimizer.state_dict(),
+        "global_step": global_step,
+        "training_objective_version": TRAINING_OBJECTIVE_VERSION,
     }
+    if scheduler is not None:
+        trainer_state["scheduler_state_dict"] = scheduler.state_dict()
     if extra_state:
         trainer_state.update(extra_state)
     torch.save(trainer_state, checkpoint_path / "trainer_state.pt")
@@ -241,6 +286,8 @@ def sync_best_model(
     epoch: int,
     block_size: int,
     best_eval_loss: float,
+    scheduler: torch.optim.lr_scheduler.LambdaLR,
+    global_step: int,
 ) -> None:
     save_checkpoint(
         OUTPUT_DIR,
@@ -257,6 +304,8 @@ def sync_best_model(
             "source_checkpoint_dir": str(BEST_CHECKPOINT_DIR),
             "synced_from_best_checkpoint": True,
         },
+        scheduler=scheduler,
+        global_step=global_step,
     )
     print(f"Best model synced to: {OUTPUT_DIR} (epoch={epoch}, eval_loss={best_eval_loss:.4f})")
 
@@ -268,6 +317,12 @@ def load_checkpoint(
     expected_vocab_size: int,
 ) -> tuple[GPT2LMHeadModel, dict[str, object], bool]:
     trainer_state = torch.load(checkpoint_path / "trainer_state.pt", map_location=device)
+    objective_version = int(trainer_state.get("training_objective_version", 1))
+    if objective_version != TRAINING_OBJECTIVE_VERSION:
+        raise ValueError(
+            f"Checkpoint training objective version={objective_version} 与当前 version={TRAINING_OBJECTIVE_VERSION} 不兼容。"
+            "旧 checkpoint 可能使用了 double-shift labels；为避免污染，新目标将从头训练。"
+        )
     checkpoint_block_size = int(trainer_state["block_size"])
     if checkpoint_block_size > expected_block_size:
         raise ValueError(
@@ -375,14 +430,13 @@ def resolve_eval_dir(eval_dir_arg: str | None) -> Path | None:
     return None
 
 
-def build_dataset_from_text(
+def build_dataset_from_docs(
     tokenizer: AutoTokenizer,
-    text: str,
+    docs: list[str],
     block_size: int,
 ) -> TextBlockDataset | None:
-    encoded = tokenizer(text, add_special_tokens=True, return_attention_mask=False)
-    input_ids = encoded["input_ids"]
-    if len(input_ids) < block_size + 1:
+    input_ids = tokenize_docs_with_eos(tokenizer, docs)
+    if len(input_ids) < block_size:
         return None
     return TextBlockDataset(input_ids, block_size)
 
@@ -391,16 +445,26 @@ def evaluate_model(
     model: GPT2LMHeadModel,
     dataloader: DataLoader,
     device: torch.device,
-) -> float:
+) -> tuple[float, float, int]:
+    """按有效预测 token 加权计算 loss 和 perplexity。"""
     model.eval()
-    total_loss = 0.0
+    total_nll = 0.0
+    total_tokens = 0
     with torch.no_grad():
         for batch in dataloader:
             batch = {key: value.to(device) for key, value in batch.items()}
             outputs = model(**batch)
-            total_loss += float(outputs.loss.item())
+            # GPT2LMHeadModel 内部使用 labels[..., 1:] 作为预测目标。
+            valid_tokens = int((batch["labels"][:, 1:] != -100).sum().item())
+            total_nll += float(outputs.loss.item()) * valid_tokens
+            total_tokens += valid_tokens
     model.train()
-    return total_loss / len(dataloader)
+
+    if total_tokens == 0:
+        raise ValueError("Evaluation dataset contains no valid prediction tokens.")
+    avg_loss = total_nll / total_tokens
+    perplexity = math.exp(avg_loss) if avg_loss < 100 else float("inf")
+    return avg_loss, perplexity, total_tokens
 
 
 def parse_args() -> argparse.Namespace:
@@ -477,9 +541,8 @@ def main() -> None:
     tokenizer.model_max_length = 10_000_000
     training_files = collect_training_files()
     training_docs = load_training_docs(training_files)
-    # 逐文档 tokenize 后拍平：每条文档自带 bos/eos 边界，短文档不丢失
-    training_doc_ids = tokenizer(training_docs, add_special_tokens=True, return_attention_mask=False)["input_ids"]
-    training_input_ids = [tok for doc in training_doc_ids for tok in doc]
+    # 训练与验证统一：逐文档 tokenize，并显式追加 EOS 后拍平。
+    training_input_ids = tokenize_docs_with_eos(tokenizer, training_docs)
     effective_block_size = choose_block_size(training_input_ids, args.block_size)
     training_dataset = RandomWindowDataset(training_input_ids, effective_block_size)
     dataloader = DataLoader(training_dataset, batch_size=args.batch_size, shuffle=True)
@@ -491,11 +554,12 @@ def main() -> None:
 
     eval_dir = resolve_eval_dir(args.eval_dir)
     eval_dataloader: DataLoader | None = None
+    eval_dataloaders_by_source: dict[str, DataLoader] = {}
     if eval_dir is not None:
         try:
             eval_files = collect_dataset_files(eval_dir)
-            eval_text = load_text_from_files(eval_files)
-            eval_dataset = build_dataset_from_text(tokenizer, eval_text, effective_block_size)
+            eval_docs = load_docs_from_files(eval_files)
+            eval_dataset = build_dataset_from_docs(tokenizer, eval_docs, effective_block_size)
             if eval_dataset is None:
                 print(f"Evaluation skipped: {eval_dir} 中的文本长度不足以切出 block_size={effective_block_size} 的样本。")
             else:
@@ -503,15 +567,19 @@ def main() -> None:
                 print(f"Evaluation files: {len(eval_files)}")
                 for file_path in eval_files:
                     print(f" - {file_path}")
+                    source_docs = load_docs_from_files([file_path])
+                    source_dataset = build_dataset_from_docs(tokenizer, source_docs, effective_block_size)
+                    if source_dataset is not None:
+                        eval_dataloaders_by_source[file_path.stem] = DataLoader(
+                            source_dataset, batch_size=args.batch_size, shuffle=False
+                        )
                 print(f"Evaluation samples: {len(eval_dataset)}")
         except FileNotFoundError:
             print(f"Evaluation skipped: no dataset files found in {eval_dir}")
     else:
         print("Evaluation skipped: neither ./valid nor ./test exists.")
 
-    latest_checkpoint = BASE_DIR / "checkpoints" / "best"
-    if not latest_checkpoint.exists():
-        latest_checkpoint = find_latest_checkpoint()
+    latest_checkpoint = find_latest_checkpoint()
     start_epoch = 0
     best_eval_loss: float | None = None
     best_epoch = 0
@@ -527,7 +595,7 @@ def main() -> None:
                 latest_checkpoint,
                 device,
                 effective_block_size,
-                tokenizer.vocab_size,
+                len(tokenizer),
             )
             start_epoch = int(trainer_state["epoch"])
             saved_best_eval_loss = trainer_state.get("best_eval_loss")
@@ -542,24 +610,39 @@ def main() -> None:
             model = build_model(tokenizer, effective_block_size).to(device)
             print("Training from scratch with the current smaller model configuration.")
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=LEARNING_RATE, weight_decay=WEIGHT_DECAY)
-    if latest_checkpoint is not None and not position_embeddings_expanded:
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=WEIGHT_DECAY)
+    can_restore_training_state = latest_checkpoint is not None and not position_embeddings_expanded
+    if can_restore_training_state:
         optimizer.load_state_dict(trainer_state["optimizer_state_dict"])
     elif position_embeddings_expanded:
-        print("Skipping optimizer state restore because position embeddings were expanded for this resume.")
+        print("Skipping optimizer/scheduler state restore because position embeddings were expanded for this resume.")
 
-    for param_group in optimizer.param_groups:
-        param_group["lr"] = args.learning_rate
-
-    # 余弦退火 + warmup：恒 lr 易加速过拟合，warmup 稳起步、退火让后期收敛更稳
+    # 用完整目标 epoch 数重建同一条学习率曲线；恢复时再加载 scheduler 的 last_epoch，
+    # 避免每次重启训练都重新 warmup。
     steps_per_epoch = len(dataloader)
-    total_steps = max(0, (args.epochs - start_epoch) * steps_per_epoch)
+    total_steps = max(1, args.epochs * steps_per_epoch)
     num_warmup_steps = int(args.warmup_ratio * total_steps)
     scheduler = get_cosine_schedule_with_warmup(
         optimizer,
         num_warmup_steps=num_warmup_steps,
         num_training_steps=total_steps,
     )
+
+    global_step = 0
+    if can_restore_training_state:
+        global_step = int(trainer_state.get("global_step", start_epoch * steps_per_epoch))
+        scheduler_state = trainer_state.get("scheduler_state_dict")
+        if scheduler_state is not None:
+            scheduler.load_state_dict(scheduler_state)
+            # load_state_dict 恢复 scheduler 计数后，同步 optimizer 当前 lr。
+            for param_group, lr in zip(optimizer.param_groups, scheduler.get_last_lr()):
+                param_group["lr"] = lr
+            print(f"Scheduler restored at global_step={global_step}, lr={scheduler.get_last_lr()[0]:.8g}")
+        else:
+            # 兼容旧 checkpoint：直接推进到已有 global_step，不再重复 warmup。
+            for _ in range(global_step):
+                scheduler.step()
+            print(f"Legacy checkpoint without scheduler state; advanced scheduler to global_step={global_step}.")
 
     if start_epoch >= args.epochs:
         print(
@@ -582,6 +665,7 @@ def main() -> None:
             torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=GRAD_CLIP_NORM)
             optimizer.step()
             scheduler.step()
+            global_step += 1
 
             total_loss += loss.item()
 
@@ -593,8 +677,17 @@ def main() -> None:
             current_epoch % args.eval_every == 0 or current_epoch == args.epochs
         )
         if should_evaluate:
-            eval_loss = evaluate_model(model, eval_dataloader, device)
-            print(f"Epoch {current_epoch}/{args.epochs}, eval_loss={eval_loss:.4f}")
+            eval_loss, eval_ppl, eval_tokens = evaluate_model(model, eval_dataloader, device)
+            print(
+                f"Epoch {current_epoch}/{args.epochs}, eval_loss={eval_loss:.4f}, "
+                f"eval_ppl={eval_ppl:.2f}, eval_tokens={eval_tokens}"
+            )
+            for source_name, source_loader in eval_dataloaders_by_source.items():
+                source_loss, source_ppl, source_tokens = evaluate_model(model, source_loader, device)
+                print(
+                    f"  {source_name}: loss={source_loss:.4f}, "
+                    f"ppl={source_ppl:.2f}, tokens={source_tokens}"
+                )
 
             is_improved = best_eval_loss is None or (best_eval_loss - eval_loss) > args.min_improvement
             if is_improved:
@@ -614,6 +707,8 @@ def main() -> None:
                         "epochs_without_improvement": epochs_without_improvement,
                         "is_best_checkpoint": True,
                     },
+                    scheduler=scheduler,
+                    global_step=global_step,
                 )
                 sync_best_model(
                     model,
@@ -622,6 +717,8 @@ def main() -> None:
                     current_epoch,
                     effective_block_size,
                     best_eval_loss,
+                    scheduler,
+                    global_step,
                 )
                 print(f"New best checkpoint: {BEST_CHECKPOINT_DIR} (epoch={best_epoch}, eval_loss={best_eval_loss:.4f})")
             else:
@@ -645,6 +742,8 @@ def main() -> None:
                 current_epoch,
                 effective_block_size,
                 trainer_state,
+                scheduler=scheduler,
+                global_step=global_step,
             )
 
         if (
