@@ -9,4 +9,4 @@ tokenizer/
 
 train.log
 
-.venv
+.venvcheckpoints copy/
