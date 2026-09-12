@@ -20,7 +20,21 @@ def parse_args() -> argparse.Namespace:
         action="store_true",
         help="Use deterministic greedy decoding instead of sampling.",
     )
+    parser.add_argument(
+        "--show-special-tokens",
+        action="store_true",
+        help="Show special tokens in the generated continuation for debugging.",
+    )
     return parser.parse_args()
+
+
+def truncate_at_first_eos(token_ids: torch.Tensor, eos_token_id: int) -> torch.Tensor:
+    """Return only tokens before the first EOS token."""
+    eos_positions = (token_ids == eos_token_id).nonzero(as_tuple=False)
+    if eos_positions.numel() == 0:
+        return token_ids
+    first_eos = int(eos_positions[0].item())
+    return token_ids[:first_eos]
 
 
 def main() -> None:
@@ -35,14 +49,23 @@ def main() -> None:
     model = AutoModelForCausalLM.from_pretrained(MODEL_DIR).to(device)
     model.eval()
 
-    encoded = tokenizer(prompt, return_tensors="pt")
+    if tokenizer.eos_token_id is None:
+        raise ValueError("Tokenizer has no eos_token_id; generation cannot stop reliably at document boundaries.")
+
+    # Training tokenization used add_special_tokens=False, so inference should match it.
+    # In particular, do not prepend a BOS token that the training stream did not contain.
+    encoded = tokenizer(prompt, return_tensors="pt", add_special_tokens=False)
     encoded = {key: value.to(device) for key, value in encoded.items()}
+    prompt_length = encoded["input_ids"].shape[1]
+
+    pad_token_id = tokenizer.pad_token_id
+    if pad_token_id is None:
+        pad_token_id = tokenizer.eos_token_id
 
     with torch.no_grad():
         generation_kwargs = {
             "max_new_tokens": MAX_NEW_TOKENS,
-            "pad_token_id": tokenizer.pad_token_id,
-            "bos_token_id": tokenizer.bos_token_id,
+            "pad_token_id": pad_token_id,
             "eos_token_id": tokenizer.eos_token_id,
         }
         if args.greedy:
@@ -56,11 +79,33 @@ def main() -> None:
                     "top_p": 0.95,
                 }
             )
+
         output_ids = model.generate(**encoded, **generation_kwargs)
 
-    generated_text = tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    # model.generate returns: [prompt tokens] + [newly generated tokens].
+    # Only decode the continuation, not the prompt itself.
+    new_token_ids = output_ids[0, prompt_length:]
+
+    # Defensive second layer: even if generate() does not stop for some config reason,
+    # never expose text after the first EOS, because training uses EOS as a document boundary.
+    visible_token_ids = truncate_at_first_eos(new_token_ids, tokenizer.eos_token_id)
+
+    generated_text = tokenizer.decode(
+        visible_token_ids,
+        skip_special_tokens=not args.show_special_tokens,
+    )
+
     print(f"Prompt: {prompt}")
     print(f"Generated: {generated_text}")
+
+    if args.show_special_tokens:
+        # Show the raw continuation as an additional diagnostic view. This can reveal
+        # whether generate() itself emitted EOS before any later tokens.
+        raw_generated = tokenizer.decode(new_token_ids, skip_special_tokens=False)
+        print(f"Raw generated: {raw_generated}")
+        print(f"tokenizer.eos_token_id: {tokenizer.eos_token_id}")
+        print(f"model.config.eos_token_id: {model.config.eos_token_id}")
+        print(f"model.generation_config.eos_token_id: {model.generation_config.eos_token_id}")
 
 
 if __name__ == "__main__":
