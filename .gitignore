@@ -9,4 +9,6 @@ tokenizer/
 
 train.log
 
-.venvcheckpoints copy/
+.venv/
+checkpoints copy/
+default.profraw
