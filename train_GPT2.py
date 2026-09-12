@@ -22,7 +22,7 @@ TOKENIZER_DIR = BASE_DIR / "tokenizer"
 OUTPUT_DIR = BASE_DIR / "littleGPT_model"
 CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
-DATASETS = ["chinese", "english", "article", "qa"]
+DATASETS = ["chinese", "english", "article", "qa_zh", "qa_en"]
 # DATASETS = ["overfit_chinese", "overfit_english"]
 
 BLOCK_SIZE = 96
