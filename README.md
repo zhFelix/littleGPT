@@ -1,6 +1,6 @@
 # littleGPT
 
-一个使用中英文小语料训练轻量级 GPT-2 模型的实验项目。
+一个使用中英文小语料训练轻量级 GPT-2 模型的简单项目。
 
 这个仓库包含一个完整但简洁的流程：
 
@@ -100,7 +100,7 @@ littleGPT/
 {"id": "train-zh-0001", "split": "train", "language": "zh", "domain": "geography", "topic": "china_geography", "text": "中国的首都是北京。"}
 ```
 
-除了 `text` 外，其他字段当前不会参与训练，但适合后续做数据分析或筛选。
+除了 `text` 外，其他字段当前不会参与训练，但可以后续做数据分析或筛选。
 
 ### 2. TXT
 
@@ -222,8 +222,9 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 
 这些目录已经被 `.gitignore` 忽略，属于训练产物，不属于源码。
 
-## 当前已知注意事项
+## 注意事项
 
 1. 脚本当前只会自动读取 `chinese` 和 `english` 这两个数据集名。
 2. `generate.py` 和 `test.py` 默认读取 `checkpoints/best`，所以第一次生成前需要先完成训练。
 3. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
+4.默认安装的PyTorch是CPU版本，如需要GPU训练，请先卸载CPU版本的PyTorch，再根据自己的CUDA版本自行安装CUDA的PyTorch。
