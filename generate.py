@@ -6,8 +6,8 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 BASE_DIR = Path(__file__).resolve().parent
-# MODEL_DIR = BASE_DIR / "checkpoints" / "best"
-MODEL_DIR = BASE_DIR / "checkpoints" / "epoch_300"
+MODEL_DIR = BASE_DIR / "checkpoints" / "best"
+# MODEL_DIR = BASE_DIR / "checkpoints" / "epoch_300"  # 上游实验用固定 epoch 检查点，本地训练只存 best
 DEFAULT_PROMPT = "给出一个SQL查询语句，查询所有用户的姓名和年龄"
 MAX_NEW_TOKENS = 30
 
