@@ -42,6 +42,13 @@ CITATION_RE = re.compile(r"[\[（(]\d[\d\s.,，-]*[）\])]")              # [1] 
 ENTITY_RE = re.compile(r"&[a-zA-Z#0-9]+;")                             # &nbsp; 等
 BRACKET_LINK_RE = re.compile(r"\[\[([^\]|]+\|)?([^\]]+)\]\]")          # 链接残留
 FILE_LINK_RE = re.compile(r"\[\[(?:File|Image|文件|Image|Category):[^\]]*\]\]", re.I)
+# ---- TextExtracts 裸 TeX 公式残片清洗 ----
+# 成对的 {\displaystyle ...} 或 {...} 大括号公式块（含嵌套）
+BALANCED_TEX_RE = re.compile(r"\s*\{[^{}\n]*\\[a-zA-Z]+[^{}]*\}\s*")
+# 孤立的 TeX 命令等残片（\frac \uparrow \begin \underset \vartriangle 等，含尾随跟踪空白）
+TEX_CMD_RE = re.compile(r"\s*\\[a-zA-Z]+(?:\{|}|\\?[^{}()\[\]]*)")
+# 数学公式常见符号粘连（如 \nF\n=\n−\nλ\nv），这类由 split 产生的单字符数学碎片
+MATH_LOOSEFRAG_RE = re.compile(r"\s*\b(?:−|−|→|←|⇒|⇐|∂|Δ|√|△|∑|∫|λ|μ|ρ|θ|φ|Ω|Δ)\b\s*")
 
 
 def api(params: dict) -> dict:
@@ -114,6 +121,10 @@ def clean_text(text: str) -> str:
     text = BRACKET_LINK_RE.sub(r"\2", text)  # 保留链接可见文本
     text = citation_re_clean(text)
     text = ENTITY_RE.sub(" ", text)
+    # 裸 TeX 公式块/命令/孤立数学符号残片
+    text = BALANCED_TEX_RE.sub(" ", text)
+    text = TEX_CMD_RE.sub(" ", text)
+    text = MATH_LOOSEFRAG_RE.sub(" ", text)
     # 章节标题行（== xxx ==）与内层子标题（=== xxx ===）删除
     text = re.sub(r"\n=+ ?[^=\n]+? *=*\n", "\n", text)
     # 折叠空行与多余空白
