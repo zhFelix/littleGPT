@@ -9,7 +9,7 @@ from transformers import PreTrainedTokenizerFast
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
 OUTPUT_DIR = BASE_DIR / "tokenizer"
-DATASETS = ["natural_zh", "natural_en", "article_en"]
+DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
 # DATASETS = ["overfit_chinese", "overfit_english"]
 VOCAB_SIZE = 10000
 MODEL_MAX_LENGTH = 256
