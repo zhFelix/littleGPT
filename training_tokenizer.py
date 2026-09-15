@@ -5,6 +5,46 @@ from tokenizers import Tokenizer, decoders, models, normalizers, pre_tokenizers,
 from tokenizers.trainers import BpeTrainer
 from transformers import PreTrainedTokenizerFast
 
+# 需要被 NFKC 折叠的中文全角标点/符号 -> 映射到私用区占位符(占位符不会被 NFKC 改变)
+# 这样 NFKC 只折叠拉丁/数字/其他符号，中文全角标点保持不变，作为独立 token
+CJK_PUNCT_PLACEHOLDERS = {
+    "，": "\uE000",
+    "：": "\uE001",
+    "；": "\uE002",
+    "！": "\uE003",
+    "？": "\uE004",
+    "（": "\uE005",
+    "）": "\uE006",
+    "％": "\uE007",
+    "＃": "\uE008",
+    "＠": "\uE009",
+    "｛": "\uE00A",
+    "｝": "\uE00B",
+    "［": "\uE00C",
+    "］": "\uE00D",
+    "…": "\uE00E",
+    "　": "\uE00F",
+}
+
+
+def build_normalizer() -> normalizers.Normalizer:
+    """构建保留中文全角标点的归一化器。
+
+    NFKC 会把中文全角标点(，：；！？、括号等)折叠成半角，导致模型学不到
+    地道中文标点。这里在 NFKC 前把中文标点替换成私用区占位符标记（私用区
+    不会被 NFKC 改变），NFKC 后再还原为占位符，从而让中文标点作为独立 token
+    保留下来。
+    """
+    # 保护(替换为占位) -> NFKC -> 还原(占位替换回中文标点)
+    norm_steps = []
+    for zh, ph in CJK_PUNCT_PLACEHOLDERS.items():
+        if zh != ph:
+            norm_steps.append(normalizers.Replace(zh, ph))
+    norm_steps.append(normalizers.NFKC())
+    for zh, ph in CJK_PUNCT_PLACEHOLDERS.items():
+        norm_steps.append(normalizers.Replace(ph, zh))
+    return normalizers.Sequence(norm_steps)
+
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
@@ -52,7 +92,7 @@ def train_tokenizer() -> None:
     training_texts = load_training_texts(training_files)
 
     tokenizer = Tokenizer(models.BPE(unk_token="<|unk|>"))
-    tokenizer.normalizer = normalizers.Sequence([normalizers.NFKC()])
+    tokenizer.normalizer = build_normalizer()
     tokenizer.pre_tokenizer = pre_tokenizers.ByteLevel(add_prefix_space=False)
     tokenizer.decoder = decoders.ByteLevel()
 
