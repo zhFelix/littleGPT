@@ -138,7 +138,9 @@ def clean_text(text: str) -> str:
 def citation_re_clean(text: str) -> str:
     # 括号内引文 (英文人名+数字) 与独立 [n]
     text = re.sub(r"[\[（(]\d+[\s.,，、-]*(?:\d+[,，]?)*[）\])]", " ", text)
-    text = re.sub(r"[\[\]0-9]+", " ", text)  # 残余孤立编号
+    # 孤立上标引文编号，如“ ¹ ² ³”或前导/独立 [1] [2]（保留正文中的真实数字）
+    text = re.sub(r"(?<=\s)\[\d+\](?=\s)", " ", text)
+    text = re.sub(r"(?<=\s)\[[0-9]+\]", " ", text)
     text = re.sub(r"[（(][^（）()]{0,30}?原.*?[）)]", " ", text)
     text = re.sub(r"[（(][^（）()]{0,40}?存于互联网档案馆[）)]", " ", text)
     return text
