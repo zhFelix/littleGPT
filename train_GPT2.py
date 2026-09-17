@@ -150,6 +150,14 @@ def collect_dataset_files(data_dir: Path) -> list[Path]:
             files.append(jsonl_path)
         elif txt_path.exists():
             files.append(txt_path)
+    if files:
+        return files
+    # 回退：按 DATASETS 命名找不到时，扫描目录下所有 jsonl/txt，
+    # 以兼容 valid/test 目录中采用旧命名（如 chinese/english）的验证集。
+    for path in sorted(data_dir.glob("*.jsonl")):
+        files.append(path)
+    for path in sorted(data_dir.glob("*.txt")):
+        files.append(path)
     if not files:
         raise FileNotFoundError(f"No dataset files found in {data_dir}")
     return files
@@ -479,7 +487,7 @@ def parse_args() -> argparse.Namespace:
         "--eval-dir",
         type=str,
         default=None,
-        help="Directory used for validation. Defaults to ./valid, or falls back to ./test when ./valid is missing.",
+        help="Directory used for validation. Defaults to ./valid (or ./test if ./valid is missing).",
     )
     parser.add_argument(
         "--eval-every",
