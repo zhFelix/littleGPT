@@ -22,12 +22,18 @@ DEFAULT_PROMPTS = [
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run a final smoke test for the trained GPT-2 model.")
     parser.add_argument(
+        "--model-dir",
+        type=str,
+        default=None,
+        help="Directory of the model to test. Defaults to ./checkpoints/best.",
+    )
+    parser.add_argument(
         "--prompt",
         action="append",
         dest="prompts",
         help="Add a prompt to test. You can pass this option multiple times.",
     )
-    parser.add_argument("--max-new-tokens", type=int, default=40, help="Maximum tokens to generate per prompt.")
+    parser.add_argument("--max-new-tokens", type=int, default=80, help="Maximum tokens to generate per prompt.")
     parser.add_argument("--temperature", type=float, default=0.8, help="Sampling temperature.")
     parser.add_argument("--top-k", type=int, default=50, help="Top-k sampling value.")
     parser.add_argument("--top-p", type=float, default=0.95, help="Top-p sampling value.")
@@ -40,13 +46,27 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def get_block_size(model: AutoModelForCausalLM) -> int:
+    return int(getattr(model.config, "n_positions", 0) or 0)
+
+
 def compute_prompt_loss(
     model: AutoModelForCausalLM,
     tokenizer: AutoTokenizer,
     prompt: str,
     device: torch.device,
 ) -> tuple[float, float]:
-    encoded = tokenizer(prompt, return_tensors="pt")
+    encoded = tokenizer(
+        prompt,
+        return_tensors="pt",
+        add_special_tokens=False,
+    )
+    # 防止 prompt 超过模型 context 导致越界
+    max_positions = get_block_size(model)
+    if max_positions > 0:
+        encoded["input_ids"] = encoded["input_ids"][:, :max_positions]
+        if "attention_mask" in encoded:
+            encoded["attention_mask"] = encoded["attention_mask"][:, :max_positions]
     encoded = {key: value.to(device) for key, value in encoded.items()}
 
     with torch.no_grad():
@@ -88,15 +108,39 @@ def evaluate_dataset(
     tokenizer: AutoTokenizer,
     lines: list[dict[str, str]],
     device: torch.device,
-) -> tuple[float, float]:
-    losses = []
-    for line in lines:
-        loss, _ = compute_prompt_loss(model, tokenizer, line["text"], device)
-        losses.append(loss)
+) -> tuple[float, float, int, int]:
+    """token-weighted loss / PPL 评估。
 
-    average_loss = sum(losses) / len(losses)
-    average_perplexity = math.exp(average_loss)
-    return average_loss, average_perplexity
+    长文本按 block_size 切块，每个 token 累计 NLL，最后
+    总 NLL / 总有效 token 再 exp()，避免短文本被过度放大，
+    同时防止超过模型 context。
+    """
+    block_size = get_block_size(model)
+    if block_size <= 0:
+        block_size = 96  # 兜底：与训练 BLOCK_SIZE 一致
+    total_nll = 0.0
+    total_tokens = 0
+
+    for line in lines:
+        ids = tokenizer(line["text"], add_special_tokens=False, return_attention_mask=False)["input_ids"]
+        if len(ids) < 2:
+            continue
+        for start in range(0, len(ids), block_size):
+            block = ids[start : start + block_size]
+            if len(block) < 2:
+                continue
+            input_ids = torch.tensor([block], dtype=torch.long, device=device)
+            with torch.no_grad():
+                outputs = model(input_ids=input_ids, labels=input_ids)
+            # GPT2LMHeadModel 内部 shift 后有效预测数为 len(block) - 1
+            valid_tokens = len(block) - 1
+            total_nll += float(outputs.loss.item()) * valid_tokens
+            total_tokens += valid_tokens
+
+    if total_tokens == 0:
+        return 0.0, 0.0, len(lines), 0
+    average_loss = total_nll / total_tokens
+    return average_loss, math.exp(average_loss), len(lines), total_tokens
 
 
 def generate_text(
@@ -107,16 +151,20 @@ def generate_text(
     max_new_tokens: int,
     temperature: float,
     top_k: int,
-    top_p: float,
-) -> str:
-    encoded = tokenizer(prompt, return_tensors="pt")
+    top_p: int,
+) -> tuple[str, bool]:
+    encoded = tokenizer(
+        prompt,
+        return_tensors="pt",
+        add_special_tokens=False,
+    )
     encoded = {key: value.to(device) for key, value in encoded.items()}
-    max_positions = int(getattr(model.config, "n_positions", 0) or 0)
+    max_positions = get_block_size(model)
     prompt_length = int(encoded["input_ids"].shape[1])
     available_new_tokens = max_positions - prompt_length if max_positions > 0 else max_new_tokens
 
     if available_new_tokens <= 0:
-        return "[skipped generation: prompt length already reaches the model context limit]"
+        return "[skipped generation: prompt length already reaches the model context limit]", False
 
     safe_max_new_tokens = min(max_new_tokens, available_new_tokens)
 
@@ -129,19 +177,25 @@ def generate_text(
             top_k=top_k,
             top_p=top_p,
             pad_token_id=tokenizer.pad_token_id,
-            bos_token_id=tokenizer.bos_token_id,
             eos_token_id=tokenizer.eos_token_id,
         )
 
-    return tokenizer.decode(output_ids[0], skip_special_tokens=True)
+    # 只取新生成部分，方便判断模型到底生成了什么
+    new_ids = output_ids[0, prompt_length:]
+    ended_with_eos = len(new_ids) > 0 and int(new_ids[-1].item()) == int(tokenizer.eos_token_id)
+    return tokenizer.decode(new_ids, skip_special_tokens=True), ended_with_eos
 
 
 def main() -> None:
     args = parse_args()
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
-    tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForCausalLM.from_pretrained(MODEL_DIR).to(device)
+    model_dir = Path(args.model_dir) if args.model_dir else MODEL_DIR
+    if not model_dir.exists():
+        raise FileNotFoundError(f"Model directory not found: {model_dir}")
+
+    tokenizer = AutoTokenizer.from_pretrained(model_dir)
+    model = AutoModelForCausalLM.from_pretrained(model_dir).to(device)
     model.eval()
     test_sets = load_test_lines()
 
@@ -155,7 +209,7 @@ def main() -> None:
             prompts = DEFAULT_PROMPTS
 
     print(f"Using device: {device}")
-    print(f"Model dir: {MODEL_DIR}")
+    print(f"Model dir: {model_dir}")
     print(f"Test dir: {TEST_DIR}")
     print(f"Vocab size: {tokenizer.vocab_size}")
     print(f"BOS token id: {tokenizer.bos_token_id}")
@@ -167,20 +221,26 @@ def main() -> None:
 
     if test_sets:
         print("[Dataset Evaluation]")
-        overall_losses = []
+        overall_nll = 0.0
+        overall_tokens = 0
         total_lines = 0
         for file_name, lines in test_sets.items():
-            dataset_loss, dataset_perplexity = evaluate_dataset(model, tokenizer, lines, device)
-            overall_losses.extend(compute_prompt_loss(model, tokenizer, line["text"], device)[0] for line in lines)
-            total_lines += len(lines)
+            dataset_loss, dataset_perplexity, num_lines, num_tokens = evaluate_dataset(
+                model, tokenizer, lines, device
+            )
+            overall_nll += dataset_loss * num_tokens
+            overall_tokens += num_tokens
+            total_lines += num_lines
             print(
-                f"{file_name}: lines={len(lines)}, avg_loss={dataset_loss:.4f}, avg_perplexity={dataset_perplexity:.2f}"
+                f"{file_name}: lines={num_lines}, tokens={num_tokens}, "
+                f"avg_loss={dataset_loss:.4f}, avg_perplexity={dataset_perplexity:.2f}"
             )
 
-        if total_lines:
-            overall_loss = sum(overall_losses) / len(overall_losses)
+        if overall_tokens:
+            overall_loss = overall_nll / overall_tokens
             print(
-                f"overall: lines={total_lines}, avg_loss={overall_loss:.4f}, avg_perplexity={math.exp(overall_loss):.2f}"
+                f"overall: lines={total_lines}, tokens={overall_tokens}, "
+                f"avg_loss={overall_loss:.4f}, avg_perplexity={math.exp(overall_loss):.2f}"
             )
         print("-" * 80)
     else:
@@ -189,7 +249,7 @@ def main() -> None:
 
     for index, prompt in enumerate(prompts, start=1):
         loss, perplexity = compute_prompt_loss(model, tokenizer, prompt, device)
-        generated = generate_text(
+        generated, ended_with_eos = generate_text(
             model,
             tokenizer,
             prompt,
@@ -205,6 +265,7 @@ def main() -> None:
         print(f"Prompt loss: {loss:.4f}")
         print(f"Prompt perplexity: {perplexity:.2f}")
         print(f"Generated: {generated}")
+        print(f"Ended with EOS: {ended_with_eos}")
         print("-" * 80)
 
 
