@@ -25,7 +25,7 @@ BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
 DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
 # DATASETS = ["overfit_chinese", "overfit_english"]
 
-BLOCK_SIZE = 96
+BLOCK_SIZE = 128
 BATCH_SIZE = 4
 EPOCHS = 20
 LEARNING_RATE = 2e-4
