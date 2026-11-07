@@ -130,6 +130,16 @@ littleGPT/
 pip install -r requirements.txt
 ```
 
+macOS Apple Silicon 上若旧环境导入 SciPy 的 `_spropack` 失败，可建立独立的 Python 3.12 环境：
+
+```bash
+/Library/Frameworks/Python.framework/Versions/3.12/bin/python3 -m venv .venv
+uv pip install --python .venv/bin/python -r requirements-macos-mps.txt
+.venv/bin/python train_GPT2.py --help
+```
+
+已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。训练脚本仍默认读取 `data/train/`；清洗版语料位于 `data_pipeline/staging/round15/`，启动前需确认实际读取的数据目录。
+
 如果你需要手动安装，也可以使用：
 
 ```bash
@@ -227,4 +237,4 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 1. 脚本当前只会自动读取 `chinese` 和 `english` 这两个数据集名。
 2. `generate.py` 和 `test.py` 默认读取 `checkpoints/best`，所以第一次生成前需要先完成训练。
 3. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
-4.默认安装的PyTorch是CPU版本，如需要GPU训练，请先卸载CPU版本的PyTorch，再根据自己的CUDA版本自行安装CUDA的PyTorch。
+4. 训练脚本按 CUDA → MPS → CPU 的顺序选择设备；请安装与当前设备兼容的 PyTorch。
