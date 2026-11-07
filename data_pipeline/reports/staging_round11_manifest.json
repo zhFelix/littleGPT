@@ -1,0 +1,31 @@
+{
+  "input_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round11_punctuation/train",
+  "output_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round11/train",
+  "topic_labels_translated": 932,
+  "files": {
+    "natural_zh": {
+      "records": 4308,
+      "sha256": "8e70fc3fb6aa54b97b1caca89dfadd2fb7bded040da61327117351459f9e86d4",
+      "tokens": 214638
+    },
+    "natural_en": {
+      "records": 3694,
+      "sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "tokens": 224736
+    },
+    "article_zh": {
+      "records": 2018,
+      "sha256": "2e9be1b36bc95f48c86c5ace578b67c825f066d85b752b4a9722ab247d7a6676",
+      "tokens": 382343
+    },
+    "article_en": {
+      "records": 842,
+      "sha256": "c4ac1ffc782316ad7a1eabab8a05a84c4b04701ccebf72b91d2c8756d417a666",
+      "tokens": 83338
+    }
+  },
+  "topic_mapping_sha256": "dc3312cc173627cee4d988acc24e02d4189cfa0422ad14e5d3e9c1360c499134",
+  "topic_records_translated": 934,
+  "total_records": 10862,
+  "total_tokens": 905055
+}

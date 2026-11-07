@@ -1,0 +1,69 @@
+{
+  "recorded_date": "2026-11-07",
+  "file_classification": {
+    "natural_zh.jsonl": {
+      "origin_class": "AI-generated",
+      "basis": "user statement in current chat",
+      "specific_generator_or_prompt": "not provided",
+      "original_file_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad",
+      "staging_round5_file_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad",
+      "original_record_count": 4308,
+      "staging_record_count": 4308
+    },
+    "natural_en.jsonl": {
+      "origin_class": "AI-generated",
+      "basis": "user statement in current chat",
+      "specific_generator_or_prompt": "not provided",
+      "original_file_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "staging_round5_file_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "original_record_count": 3694,
+      "staging_record_count": 3694
+    },
+    "article_zh.jsonl": {
+      "origin_class": "external",
+      "basis": "user statement in current chat",
+      "observed_record_source": "zh.wikipedia.org",
+      "source_title_groups": 126,
+      "license": "not recorded in dataset",
+      "original_file_sha256": "b8390d5852705434cc4f6a0c817d563b69a1e1a75c549f3a168a8615aeeeedc6",
+      "staging_round5_file_sha256": "584f984e094a8589ebbf959abe312ce3682b58fa06545e9e98ca774870ece113",
+      "original_record_count": 2024,
+      "staging_record_count": 1927,
+      "staging_round6_grouped_records": 1927,
+      "staging_round6_group_count": 126
+    },
+    "article_en.jsonl": {
+      "origin_class": "mixed: 654 external original records; 200 ChatGPT-generated original records",
+      "basis": "user statement in current chat",
+      "specific_source_urls": "not recorded in dataset",
+      "license": "not recorded in dataset",
+      "original_file_sha256": "7b746e34573f12a4feeeaf0150b224e350cf771413acb364b7e0e6d5a1dcfc61",
+      "staging_round5_file_sha256": "09030c357918fd9ff3e70eb08771ad2b91027e4792697127bdd25fc4d7c6e06b",
+      "original_record_count": 854,
+      "staging_record_count": 838,
+      "local_source_catalogs": [
+        "article/science_articles_sources_10.json",
+        "article/superconductivity_sources_5.json",
+        "article/article.json"
+      ],
+      "candidate_topic_matched_records": "superseded by exact-text match to historical records",
+      "unmatched_records": "200 current staged records have no matching historical record",
+      "candidate_note": "Unique topic match to local source catalog, not proof that every record came from that URL; needs verification.",
+      "historical_record_source": "git revision 173e319^:train/article.jsonl",
+      "historically_verified_current_original_records": 654,
+      "staging_round6_restored_source_records": 638,
+      "staging_round6_unresolved_source_records": 200,
+      "staging_round6_verified_source_url_groups": 33,
+      "staging_round7_verified_source_records": 638,
+      "staging_round7_source_unknown_quarantined": 200,
+      "last_200_origin_assessment": {
+        "status": "confirmed_AI_generated_by_user",
+        "evidence": "user confirmation in current chat, 2026-11-07"
+      },
+      "staging_round8_external_records": 638,
+      "staging_round8_ChatGPT_generated_records": 200
+    }
+  },
+  "note": "Origin class is user-reported; record-level external source and reuse permissions still require evidence.",
+  "stage_current": "staging/round8/train"
+}

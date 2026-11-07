@@ -1,0 +1,44 @@
+{
+  "input_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/train",
+  "output_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round2/train",
+  "files": {
+    "natural_zh.jsonl": {
+      "before_records": 4308,
+      "after_records": 4308,
+      "edited_records": 0,
+      "tokens_before": 215451,
+      "tokens_after": 215451,
+      "source_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad",
+      "staging_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad"
+    },
+    "natural_en.jsonl": {
+      "before_records": 3694,
+      "after_records": 3694,
+      "edited_records": 0,
+      "tokens_before": 224736,
+      "tokens_after": 224736,
+      "source_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "staging_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69"
+    },
+    "article_zh.jsonl": {
+      "before_records": 2018,
+      "after_records": 2018,
+      "edited_records": 0,
+      "tokens_before": 389364,
+      "tokens_after": 389364,
+      "source_sha256": "4fbcb2776a039151862ae59b722e1fd95c55466f2e561ac36762a8aa4658cca2",
+      "staging_sha256": "4fbcb2776a039151862ae59b722e1fd95c55466f2e561ac36762a8aa4658cca2"
+    },
+    "article_en.jsonl": {
+      "before_records": 854,
+      "after_records": 854,
+      "edited_records": 14,
+      "tokens_before": 84888,
+      "tokens_after": 84604,
+      "source_sha256": "7b746e34573f12a4feeeaf0150b224e350cf771413acb364b7e0e6d5a1dcfc61",
+      "staging_sha256": "fc5cb386817bc270eea042aece2a3b7d5b9d13f9a5d42ed00fff2d591a11da9d"
+    }
+  },
+  "rule": "WEB_ARTIFACT_MANUAL_V1",
+  "status": "partial staging only; not adopted for training"
+}

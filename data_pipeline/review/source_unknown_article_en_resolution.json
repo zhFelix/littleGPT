@@ -1,0 +1,7 @@
+{
+  "record_ids": "article-en-000655 to article-en-000854",
+  "count": 200,
+  "resolution": "ChatGPT-generated, user confirmed on 2026-11-07",
+  "restored_in": "staging/round8/train/article_en.jsonl",
+  "historical_quarantine_file": "review/source_unknown_article_en.jsonl"
+}

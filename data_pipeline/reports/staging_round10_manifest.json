@@ -1,0 +1,29 @@
+{
+  "input_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round9/train",
+  "output_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round10/train",
+  "repaired_and_restored": 51,
+  "risk_still_quarantined": 0,
+  "files": {
+    "natural_zh.jsonl": {
+      "records": 4308,
+      "tokens": 215451,
+      "sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad"
+    },
+    "natural_en.jsonl": {
+      "records": 3694,
+      "tokens": 224736,
+      "sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69"
+    },
+    "article_zh.jsonl": {
+      "records": 2018,
+      "tokens": 386860,
+      "sha256": "f205942fb680bf03c8945971c5d68541051ddc69c3908b088521e78d00d9630b"
+    },
+    "article_en.jsonl": {
+      "records": 842,
+      "tokens": 83338,
+      "sha256": "c4ac1ffc782316ad7a1eabab8a05a84c4b04701ccebf72b91d2c8756d417a666"
+    }
+  },
+  "status": "provisional; external rights and random sample review outstanding"
+}

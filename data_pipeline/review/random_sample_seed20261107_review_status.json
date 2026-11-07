@@ -1,0 +1,11 @@
+{
+  "seed": 20261107,
+  "review_complete_by_user": true,
+  "total": 200,
+  "counts": {
+    "pass": 188,
+    "modify": 12
+  },
+  "decision_log": "outputs/data_pipeline/review/random_sample_seed20261107_final_decisions.jsonl",
+  "note": "用户已声明审核完成；当前 Markdown 勾选为最终审核结论。"
+}

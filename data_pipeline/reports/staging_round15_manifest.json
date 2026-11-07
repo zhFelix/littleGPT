@@ -1,0 +1,88 @@
+{
+  "source": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round14",
+  "status": "provisional_pending_public_release_rights_review",
+  "rule": "R15-remove-web-furniture",
+  "files": {
+    "train/article_en.jsonl": {
+      "records": 673,
+      "tokens": 53615,
+      "sha256": "225ffcf681ae067765f2ffe597753e0af9f56c352b82ecf0f58f70e07b6ca3b0"
+    },
+    "train/article_zh.jsonl": {
+      "records": 1615,
+      "tokens": 308277,
+      "sha256": "c6e7c45244381aff1136b0ba7dd5004d3a28ae52bc1996954e1e01674d1c55b1"
+    },
+    "train/natural_en.jsonl": {
+      "records": 2956,
+      "tokens": 179473,
+      "sha256": "e07bed7c6c26bfc2cef2dc985ddcdd1ddfe7c6d056c3ebf234ebfde0cb702f55"
+    },
+    "train/natural_zh.jsonl": {
+      "records": 3446,
+      "tokens": 172072,
+      "sha256": "acfd44cd75bee073705dc02d0f478913d158e9638a58052fe67320537c4fb42b"
+    },
+    "valid/article_en.jsonl": {
+      "records": 84,
+      "tokens": 12783,
+      "sha256": "485b2852a532157ed9b72b2bd6f81d3e86885296f2e17acc9e445877956bc8e9"
+    },
+    "valid/article_zh.jsonl": {
+      "records": 201,
+      "tokens": 37534,
+      "sha256": "7ca3edfbffa2ce5e8792415d78a4094cc08099be0ead583fffc0a33256b5f9a2"
+    },
+    "valid/natural_en.jsonl": {
+      "records": 369,
+      "tokens": 24099,
+      "sha256": "29a7a5ca85f9ba9371b35695369a549321eb96cd9c17b9a1ef7d1c1bb6cf93a1"
+    },
+    "valid/natural_zh.jsonl": {
+      "records": 431,
+      "tokens": 20996,
+      "sha256": "1a8d4cf6ca41ab6a42315e34d66b163c9dd0e5eb42a928cb54e1967795badb90"
+    },
+    "test/article_en.jsonl": {
+      "records": 84,
+      "tokens": 16150,
+      "sha256": "64c7df81f74c521c7110f973e65a7c9d3569b86eb20887fb7831e40cc069428d"
+    },
+    "test/article_zh.jsonl": {
+      "records": 202,
+      "tokens": 36532,
+      "sha256": "97de5d8eb45e838cb6b7c2182552f98802f54b7a6af05ba07154f8b4a72e57fb"
+    },
+    "test/natural_en.jsonl": {
+      "records": 369,
+      "tokens": 21164,
+      "sha256": "b35955b400cc63baa1267769926c8fc287819b98e8b0cab2ece14b881d79dfd1"
+    },
+    "test/natural_zh.jsonl": {
+      "records": 431,
+      "tokens": 21570,
+      "sha256": "347f5b4cb35c72ffd81080bbc46fbc4bab7c75eb5ae356ed0c85b9b409a223bb"
+    }
+  },
+  "edited_ids": [
+    "article-en-000061",
+    "article-en-000162",
+    "article-en-000163",
+    "article-en-000184",
+    "article-en-000248",
+    "article-en-000275",
+    "article-en-000276",
+    "article-en-000288",
+    "article-en-000307",
+    "article-en-000317",
+    "article-en-000337",
+    "article-en-000420",
+    "article-en-000488",
+    "article-en-000524",
+    "article-en-000560",
+    "article-en-000572"
+  ],
+  "dropped_ids": [
+    "article-en-000287"
+  ]
+}

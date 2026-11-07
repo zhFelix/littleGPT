@@ -1,0 +1,84 @@
+{
+  "train_records": 10862,
+  "train_tokens": 913007,
+  "metadata_coverage": {
+    "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round4/train/natural_zh.jsonl": {
+      "records": 4308,
+      "tokens": 215451,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round4/train/natural_en.jsonl": {
+      "records": 3694,
+      "tokens": 224736,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round4/train/article_zh.jsonl": {
+      "records": 2018,
+      "tokens": 389360,
+      "source": 2018,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round4/train/article_en.jsonl": {
+      "records": 842,
+      "tokens": 83460,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/felixspace/rat/gpt2/valid/chinese.jsonl": {
+      "records": 110,
+      "tokens": 5249,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/felixspace/rat/gpt2/valid/english.jsonl": {
+      "records": 90,
+      "tokens": 5643,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/felixspace/rat/gpt2/test/chinese.jsonl": {
+      "records": 40,
+      "tokens": 706,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    },
+    "/Users/zhangyunjian/felixspace/rat/gpt2/test/english.jsonl": {
+      "records": 40,
+      "tokens": 903,
+      "source": 0,
+      "source_url": 0,
+      "doc_id": 0,
+      "license": 0
+    }
+  },
+  "cross_split_exact_groups": 0,
+  "cross_split_near_pairs": 0,
+  "cross_split_near_verified_candidates": 0,
+  "near_method": "exhaustive inverted-index verification for char 5-gram Jaccard >=0.85 on every eval-vs-other-split pair; text length ratio >=0.70",
+  "review_queue_records": 95,
+  "review_reason_counts": {
+    "possible_formula_extraction_damage": 44,
+    "possible_table_or_markup_fragment": 43,
+    "unbalanced_ascii_parentheses": 16,
+    "possible_web_navigation_mixed_with_body": 4
+  },
+  "stratified_sample_records": 200,
+  "high_risk_sample_records": 95,
+  "cross_split_near_details": []
+}

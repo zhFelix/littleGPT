@@ -1,0 +1,54 @@
+{
+  "source_root": "/Users/zhangyunjian/felixspace/rat/gpt2",
+  "staging_root": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/train",
+  "files": {
+    "data/train/natural_zh.jsonl": {
+      "source_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad",
+      "staging_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad"
+    },
+    "data/train/natural_en.jsonl": {
+      "source_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "staging_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69"
+    },
+    "data/train/article_zh.jsonl": {
+      "source_sha256": "b8390d5852705434cc4f6a0c817d563b69a1e1a75c549f3a168a8615aeeeedc6",
+      "staging_sha256": "4fbcb2776a039151862ae59b722e1fd95c55466f2e561ac36762a8aa4658cca2"
+    },
+    "data/train/article_en.jsonl": {
+      "source_sha256": "7b746e34573f12a4feeeaf0150b224e350cf771413acb364b7e0e6d5a1dcfc61",
+      "staging_sha256": "7b746e34573f12a4feeeaf0150b224e350cf771413acb364b7e0e6d5a1dcfc61"
+    }
+  },
+  "counts": {
+    "data/train/natural_zh.jsonl": {
+      "before": 4308,
+      "removed": 0,
+      "after": 4308,
+      "tokens_before": 215451,
+      "tokens_after": 215451
+    },
+    "data/train/natural_en.jsonl": {
+      "before": 3694,
+      "removed": 0,
+      "after": 3694,
+      "tokens_before": 224736,
+      "tokens_after": 224736
+    },
+    "data/train/article_zh.jsonl": {
+      "before": 2024,
+      "removed": 6,
+      "after": 2018,
+      "tokens_before": 390216,
+      "tokens_after": 389364
+    },
+    "data/train/article_en.jsonl": {
+      "before": 854,
+      "removed": 0,
+      "after": 854,
+      "tokens_before": 84888,
+      "tokens_after": 84888
+    }
+  },
+  "rule": "EXACT_DUPLICATE_V1",
+  "status": "partial staging only; not adopted for training"
+}

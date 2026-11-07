@@ -1,0 +1,43 @@
+{
+  "input_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round6/train",
+  "output_staging": "/Users/zhangyunjian/Documents/Codex/2026-11-07/jia/outputs/data_pipeline/staging/round7/train",
+  "files": {
+    "natural_zh.jsonl": {
+      "before_records": 4308,
+      "quarantined": 0,
+      "after_records": 4308,
+      "tokens_before": 215451,
+      "tokens_after": 215451,
+      "input_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad",
+      "output_sha256": "9d86a784a08f52dc4a998c4c2e28a1d711b6f0dc06dbeffdb6d7a27f3116c4ad"
+    },
+    "natural_en.jsonl": {
+      "before_records": 3694,
+      "quarantined": 0,
+      "after_records": 3694,
+      "tokens_before": 224736,
+      "tokens_after": 224736,
+      "input_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69",
+      "output_sha256": "b99e62a887515a7a212963008df5c4c56e061b9a7a35f662bf7a7012109bae69"
+    },
+    "article_zh.jsonl": {
+      "before_records": 1927,
+      "quarantined": 0,
+      "after_records": 1927,
+      "tokens_before": 374620,
+      "tokens_after": 374620,
+      "input_sha256": "79d81e8bdd2d1e20667763e3fa54aeda6b1a5a4302a70f6468fdfee6abf03a3a",
+      "output_sha256": "79d81e8bdd2d1e20667763e3fa54aeda6b1a5a4302a70f6468fdfee6abf03a3a"
+    },
+    "article_en.jsonl": {
+      "before_records": 838,
+      "quarantined": 200,
+      "after_records": 638,
+      "tokens_before": 83147,
+      "tokens_after": 43315,
+      "input_sha256": "f9b5e16abaca11dea611cc18035bd4f9b1592b21d8f5e31e8f0d1d1daee210bf",
+      "output_sha256": "35051de54a73de0e08f6cf99102c1804fafe867599c566ac7f4b6d0cb57406a7"
+    }
+  },
+  "status": "provisional; 95 content-risk plus 200 source-unknown records temporarily quarantined"
+}
