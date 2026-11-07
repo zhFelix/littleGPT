@@ -19,8 +19,10 @@ from transformers import (
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
-OUTPUT_DIR = BASE_DIR / "littleGPT_model"
-CHECKPOINT_DIR = BASE_DIR / "checkpoints"
+OUTPUT_DIR = BASE_DIR / "runs" / "round15" / "model"
+CHECKPOINT_DIR = BASE_DIR / "runs" / "round15" / "checkpoints"
+LEGACY_OUTPUT_DIR = BASE_DIR / "littleGPT_model"
+LEGACY_CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
 # DATASETS = ["overfit_chinese", "overfit_english"]
 
@@ -491,13 +493,13 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint-dir",
         type=str,
         default=None,
-        help="Checkpoint directory. Defaults to ./checkpoints; existing checkpoints here are resumed automatically.",
+        help="Checkpoint directory. Defaults to ./runs/round15/checkpoints; existing checkpoints here are resumed automatically.",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
         default=None,
-        help="Final model directory. Defaults to ./littleGPT_model.",
+        help="Final model directory. Defaults to ./runs/round15/model.",
     )
     parser.add_argument("--epochs", type=int, default=EPOCHS, help="Target total epochs after resuming.")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Training batch size.")
@@ -565,8 +567,11 @@ def resolve_training_paths(args: argparse.Namespace) -> tuple[Path, Path | None,
         raise ValueError("训练目录和验证目录不能相同。")
     if checkpoint_dir == output_dir or checkpoint_dir in output_dir.parents or output_dir in checkpoint_dir.parents:
         raise ValueError("Checkpoint 目录和模型输出目录不能相同或相互包含。")
-    if args.train_dir is not None and (checkpoint_dir == CHECKPOINT_DIR or output_dir == OUTPUT_DIR):
-        raise ValueError("新训练数据不能写入旧版默认 checkpoint 或模型目录，请指定独立的输出路径。")
+    if args.train_dir is not None and (
+        checkpoint_dir in (CHECKPOINT_DIR, LEGACY_CHECKPOINT_DIR)
+        or output_dir in (OUTPUT_DIR, LEGACY_OUTPUT_DIR)
+    ):
+        raise ValueError("自定义训练数据需要独立的 checkpoint 和模型输出目录。")
 
     return train_dir, eval_dir, checkpoint_dir, output_dir
 

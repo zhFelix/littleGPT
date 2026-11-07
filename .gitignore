@@ -4,6 +4,7 @@ __pycache__/
 *.bak
 
 checkpoints/
+backups/
 runs/
 trained_model/
 tokenizer/
