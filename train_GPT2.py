@@ -21,7 +21,6 @@ DATA_DIR = BASE_DIR / "data" / "train"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
 OUTPUT_DIR = BASE_DIR / "littleGPT_model"
 CHECKPOINT_DIR = BASE_DIR / "checkpoints"
-BEST_CHECKPOINT_DIR = CHECKPOINT_DIR / "best"
 DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
 # DATASETS = ["overfit_chinese", "overfit_english"]
 
@@ -163,8 +162,8 @@ def collect_dataset_files(data_dir: Path) -> list[Path]:
     return files
 
 
-def collect_training_files() -> list[Path]:
-    return collect_dataset_files(DATA_DIR)
+def collect_training_files(train_dir: Path) -> list[Path]:
+    return collect_dataset_files(train_dir)
 
 
 def load_docs_from_files(files: list[Path]) -> list[str]:
@@ -222,22 +221,23 @@ def choose_block_size(input_ids: list[int], preferred_block_size: int) -> int:
     return min(preferred_block_size, max_allowed)
 
 
-def get_checkpoint_path(epoch: int) -> Path:
-    return CHECKPOINT_DIR / f"epoch_{epoch:03d}"
+def get_checkpoint_path(checkpoint_dir: Path, epoch: int) -> Path:
+    return checkpoint_dir / f"epoch_{epoch:03d}"
 
 
-def find_latest_checkpoint() -> Path | None:
+def find_latest_checkpoint(checkpoint_dir: Path) -> Path | None:
     """返回最新保存的可恢复 checkpoint，而不是优先返回 best。
 
     epoch_* 与 best 都可能包含可恢复状态；按 trainer_state 中记录的 epoch
     选择实际训练进度最大的那个。best 仍只用于最终模型选择。
     """
-    if not CHECKPOINT_DIR.exists():
+    if not checkpoint_dir.exists():
         return None
 
-    candidates = [path for path in CHECKPOINT_DIR.glob("epoch_*") if path.is_dir()]
-    if BEST_CHECKPOINT_DIR.is_dir():
-        candidates.append(BEST_CHECKPOINT_DIR)
+    candidates = [path for path in checkpoint_dir.glob("epoch_*") if path.is_dir()]
+    best_checkpoint_dir = checkpoint_dir / "best"
+    if best_checkpoint_dir.is_dir():
+        candidates.append(best_checkpoint_dir)
 
     latest_path: Path | None = None
     latest_epoch = -1
@@ -290,6 +290,8 @@ def save_checkpoint(
 
 
 def sync_best_model(
+    output_dir: Path,
+    best_checkpoint_dir: Path,
     model: GPT2LMHeadModel,
     tokenizer: AutoTokenizer,
     optimizer: torch.optim.Optimizer,
@@ -300,7 +302,7 @@ def sync_best_model(
     global_step: int,
 ) -> None:
     save_checkpoint(
-        OUTPUT_DIR,
+        output_dir,
         model,
         tokenizer,
         optimizer,
@@ -311,13 +313,13 @@ def sync_best_model(
             "best_epoch": epoch,
             "epochs_without_improvement": 0,
             "is_best_checkpoint": True,
-            "source_checkpoint_dir": str(BEST_CHECKPOINT_DIR),
+            "source_checkpoint_dir": str(best_checkpoint_dir),
             "synced_from_best_checkpoint": True,
         },
         scheduler=scheduler,
         global_step=global_step,
     )
-    print(f"Best model synced to: {OUTPUT_DIR} (epoch={epoch}, eval_loss={best_eval_loss:.4f})")
+    print(f"Best model synced to: {output_dir} (epoch={epoch}, eval_loss={best_eval_loss:.4f})")
 
 
 def load_checkpoint(
@@ -479,6 +481,24 @@ def evaluate_model(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Train or resume a small GPT-2 model.")
+    parser.add_argument(
+        "--train-dir",
+        type=str,
+        default=None,
+        help="Training data directory. Defaults to ./data/train. For a new dataset, also set --eval-dir, --checkpoint-dir and --output-dir.",
+    )
+    parser.add_argument(
+        "--checkpoint-dir",
+        type=str,
+        default=None,
+        help="Checkpoint directory. Defaults to ./checkpoints; existing checkpoints here are resumed automatically.",
+    )
+    parser.add_argument(
+        "--output-dir",
+        type=str,
+        default=None,
+        help="Final model directory. Defaults to ./littleGPT_model.",
+    )
     parser.add_argument("--epochs", type=int, default=EPOCHS, help="Target total epochs after resuming.")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Training batch size.")
     parser.add_argument("--block-size", type=int, default=BLOCK_SIZE, help="Preferred token block size.")
@@ -522,6 +542,35 @@ def parse_args() -> argparse.Namespace:
     return parser.parse_args()
 
 
+def resolve_training_paths(args: argparse.Namespace) -> tuple[Path, Path | None, Path, Path]:
+    if args.train_dir is not None:
+        missing = [
+            option for option in ("eval_dir", "checkpoint_dir", "output_dir")
+            if getattr(args, option) is None
+        ]
+        if missing:
+            flags = ", ".join(f"--{option.replace('_', '-')}" for option in missing)
+            raise ValueError(f"使用 --train-dir 时也必须指定 {flags}，以隔离新数据的验证和训练产物。")
+
+    train_dir = Path(args.train_dir).expanduser().resolve() if args.train_dir else DATA_DIR
+    eval_dir = resolve_eval_dir(args.eval_dir)
+    checkpoint_dir = Path(args.checkpoint_dir).expanduser().resolve() if args.checkpoint_dir else CHECKPOINT_DIR
+    output_dir = Path(args.output_dir).expanduser().resolve() if args.output_dir else OUTPUT_DIR
+
+    if not train_dir.is_dir():
+        raise FileNotFoundError(f"Training directory not found: {train_dir}")
+    if args.eval_dir is not None and (eval_dir is None or not eval_dir.is_dir()):
+        raise FileNotFoundError(f"Evaluation directory not found: {eval_dir}")
+    if eval_dir is not None and train_dir == eval_dir:
+        raise ValueError("训练目录和验证目录不能相同。")
+    if checkpoint_dir == output_dir or checkpoint_dir in output_dir.parents or output_dir in checkpoint_dir.parents:
+        raise ValueError("Checkpoint 目录和模型输出目录不能相同或相互包含。")
+    if args.train_dir is not None and (checkpoint_dir == CHECKPOINT_DIR or output_dir == OUTPUT_DIR):
+        raise ValueError("新训练数据不能写入旧版默认 checkpoint 或模型目录，请指定独立的输出路径。")
+
+    return train_dir, eval_dir, checkpoint_dir, output_dir
+
+
 def main() -> None:
     args = parse_args()
     if args.epochs <= 0:
@@ -542,6 +591,8 @@ def main() -> None:
         raise ValueError("--save-checkpoint-every 必须大于 0。")
     if not 0 <= args.warmup_ratio < 1:
         raise ValueError("--warmup-ratio 必须在 [0, 1) 区间内。")
+    train_dir, eval_dir, checkpoint_dir, output_dir = resolve_training_paths(args)
+    best_checkpoint_dir = checkpoint_dir / "best"
 
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -550,11 +601,15 @@ def main() -> None:
     else:
         device = torch.device("cpu")
     print(f"Using device: {device}")
+    print(f"Training dir: {train_dir}")
+    print(f"Evaluation dir: {eval_dir}")
+    print(f"Checkpoint dir: {checkpoint_dir}")
+    print(f"Output dir: {output_dir}")
 
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_DIR)
     # We chunk the token ids ourselves below, so the full corpus can exceed model_max_length.
     tokenizer.model_max_length = 10_000_000
-    training_files = collect_training_files()
+    training_files = collect_training_files(train_dir)
     training_docs = load_training_docs(training_files)
     # 训练与验证统一：逐文档 tokenize，并显式追加 EOS 后拍平。
     training_input_ids = tokenize_docs_with_eos(tokenizer, training_docs)
@@ -567,7 +622,6 @@ def main() -> None:
         print(f" - {file_path}")
     print(f"Training samples: {len(training_dataset)}, block_size: {effective_block_size}")
 
-    eval_dir = resolve_eval_dir(args.eval_dir)
     eval_dataloader: DataLoader | None = None
     eval_dataloaders_by_source: dict[str, DataLoader] = {}
     if eval_dir is not None:
@@ -576,6 +630,8 @@ def main() -> None:
             eval_docs = load_docs_from_files(eval_files)
             eval_dataset = build_dataset_from_docs(tokenizer, eval_docs, effective_block_size)
             if eval_dataset is None:
+                if args.eval_dir is not None:
+                    raise ValueError(f"验证目录 {eval_dir} 的文本不足以切出 block_size={effective_block_size} 的样本。")
                 print(f"Evaluation skipped: {eval_dir} 中的文本长度不足以切出 block_size={effective_block_size} 的样本。")
             else:
                 eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
@@ -590,11 +646,13 @@ def main() -> None:
                         )
                 print(f"Evaluation samples: {len(eval_dataset)}")
         except FileNotFoundError:
+            if args.eval_dir is not None:
+                raise
             print(f"Evaluation skipped: no dataset files found in {eval_dir}")
     else:
         print("Evaluation skipped: neither ./valid nor ./test exists.")
 
-    latest_checkpoint = find_latest_checkpoint()
+    latest_checkpoint = find_latest_checkpoint(checkpoint_dir)
     start_epoch = 0
     best_eval_loss: float | None = None
     best_epoch = 0
@@ -710,7 +768,7 @@ def main() -> None:
                 best_epoch = current_epoch
                 epochs_without_improvement = 0
                 save_checkpoint(
-                    BEST_CHECKPOINT_DIR,
+                    best_checkpoint_dir,
                     model,
                     tokenizer,
                     optimizer,
@@ -726,6 +784,8 @@ def main() -> None:
                     global_step=global_step,
                 )
                 sync_best_model(
+                    output_dir,
+                    best_checkpoint_dir,
                     model,
                     tokenizer,
                     optimizer,
@@ -735,7 +795,7 @@ def main() -> None:
                     scheduler,
                     global_step,
                 )
-                print(f"New best checkpoint: {BEST_CHECKPOINT_DIR} (epoch={best_epoch}, eval_loss={best_eval_loss:.4f})")
+                print(f"New best checkpoint: {best_checkpoint_dir} (epoch={best_epoch}, eval_loss={best_eval_loss:.4f})")
             else:
                 epochs_without_improvement += 1
                 print(
@@ -750,7 +810,7 @@ def main() -> None:
         }
         if current_epoch % args.save_checkpoint_every == 0 or current_epoch == args.epochs:
             save_checkpoint(
-                get_checkpoint_path(current_epoch),
+                get_checkpoint_path(checkpoint_dir, current_epoch),
                 model,
                 tokenizer,
                 optimizer,
@@ -772,21 +832,21 @@ def main() -> None:
             )
             break
 
-    OUTPUT_DIR.mkdir(exist_ok=True)
-    if eval_dataloader is not None and best_eval_loss is not None and BEST_CHECKPOINT_DIR.exists():
-        best_model = AutoModelForCausalLM.from_pretrained(BEST_CHECKPOINT_DIR)
-        best_tokenizer = AutoTokenizer.from_pretrained(BEST_CHECKPOINT_DIR)
-        best_model.save_pretrained(OUTPUT_DIR)
-        best_tokenizer.save_pretrained(OUTPUT_DIR)
-        shutil.copy2(BEST_CHECKPOINT_DIR / "trainer_state.pt", OUTPUT_DIR / "trainer_state.pt")
+    output_dir.mkdir(parents=True, exist_ok=True)
+    if eval_dataloader is not None and best_eval_loss is not None and best_checkpoint_dir.exists():
+        best_model = AutoModelForCausalLM.from_pretrained(best_checkpoint_dir)
+        best_tokenizer = AutoTokenizer.from_pretrained(best_checkpoint_dir)
+        best_model.save_pretrained(output_dir)
+        best_tokenizer.save_pretrained(output_dir)
+        shutil.copy2(best_checkpoint_dir / "trainer_state.pt", output_dir / "trainer_state.pt")
         print(
-            f"Best model saved to: {OUTPUT_DIR} "
-            f"(source={BEST_CHECKPOINT_DIR}, epoch={best_epoch}, eval_loss={best_eval_loss:.4f})"
+            f"Best model saved to: {output_dir} "
+            f"(source={best_checkpoint_dir}, epoch={best_epoch}, eval_loss={best_eval_loss:.4f})"
         )
     else:
-        model.save_pretrained(OUTPUT_DIR)
-        tokenizer.save_pretrained(OUTPUT_DIR)
-        print(f"Latest model saved to: {OUTPUT_DIR}")
+        model.save_pretrained(output_dir)
+        tokenizer.save_pretrained(output_dir)
+        print(f"Latest model saved to: {output_dir}")
 
 
 if __name__ == "__main__":
