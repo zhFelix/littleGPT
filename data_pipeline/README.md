@@ -4,4 +4,6 @@
 
 这份语料仍处于暂存状态：外部文章的公开发布许可尚未逐页确认。来源清单和署名草稿见 `reports/source_rights_inventory_round13.jsonl` 与 `reports/PUBLICATION_ATTRIBUTION_DRAFT_round15.md`。
 
-`train_GPT2.py` 当前默认读取仓库的 `data/train/`，不会自动读取本目录。恢复训练前应为原始版和清洗版分别建立独立的数据、检查点与模型输出目录，并使用相同的随机种子、初始化、训练步数和独立测试集；不要覆盖原始 `data/train/`。
+第 12 轮将清洗后的四类语料按来源组及近重复候选划分为 train / valid / test，固定种子为 `20261107`，目标比例为 80% / 10% / 10%；第 15 轮沿用集合归属。原仓库的 `valid/chinese.jsonl` 和 `valid/english.jsonl` 是更早建立的 200 条验证集，与本目录的 round15 `valid/` 不是同一批记录。
+
+仓库默认的 `data/train/` 和 `valid/` 现已复制 round15 对应集合；覆盖前的文件备份在本地 `backups/pre_round15_20261108/`。`train_GPT2.py` 默认把新训练产物写入 `runs/round15/`，保留旧 `checkpoints/` 和 `littleGPT_model/`。独立测试集仍位于本目录的 `staging/round15/test/`，训练时不读取。
