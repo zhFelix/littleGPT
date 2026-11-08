@@ -162,7 +162,7 @@ python training_tokenizer.py
 python train_GPT2.py --epochs 40 --early-stopping-patience 3
 ```
 
-此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入新的 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。先前两组使用部分语料的产物保留在 `runs/round15/` 和 `runs/round15_old_eval/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
+此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。该轮最佳模型已手工复制到默认目录 `checkpoints/best/` 和 `littleGPT_model/`。先前两组使用部分语料的产物保留在 `runs/round15/` 和 `runs/round15_old_eval/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
 
 启动训练前会用 `data_pipeline/reports/active_train_sha256.json` 核对四个训练文件的 SHA-256、文件列表和总指纹。总指纹由按文件名排序的逐文件哈希计算。不启动训练也可单独核对：
 
@@ -204,7 +204,7 @@ python train_GPT2.py \
 - `runs/round15_full_old_eval/checkpoints/best/`
 - `runs/round15_full_old_eval/model/`
 
-`runs/` 下的产物不会改动旧模型。
+训练脚本只写入 `runs/`；默认目录中的模型是训练完成后另行复制的。
 
 ### 4. 文本生成
 
@@ -252,7 +252,9 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 ## 输出目录说明
 
 - `tokenizer/`：训练得到的分词器
-- `checkpoints/` 和 `littleGPT_model/`：上一轮训练产物，保留作对照
+- `checkpoints/best/` 和 `littleGPT_model/`：目前默认使用的完整清洗版模型
+- `littleGPT_model/archive/pre_round15_model_20261108/`：已提交的上一版最佳推理模型及 SHA-256 清单
+- `backups/pre_full_round15_model_20261108/best/`：上一版完整 checkpoint 的本地备份，含未提交的 `trainer_state.pt`
 - `runs/round15_full_old_eval/checkpoints/best/`：完整清洗版训练在原始验证集上最优的 checkpoint
 - `runs/round15_full_old_eval/model/`：完整清洗版训练结束后导出的最终模型
 - `runs/round15_old_eval/`：仅使用 round15 训练分片的上一组产物
@@ -264,6 +266,6 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 ## 注意事项
 
 1. 训练脚本优先读取 `natural_zh`、`natural_en`、`article_zh`、`article_en`，未找到时读取目录中的 JSONL/TXT 文件。
-2. `generate.py` 和 `test.py` 仍默认读取旧模型目录；检查新模型时请显式传入 `--model-dir`。`test.py` 读取原始 `test/` 数据，供新旧模型在同一测试集上比较。
+2. `generate.py` 和 `test.py` 默认读取已提升的完整清洗版模型。`test.py` 读取原始 `test/` 数据；旧版模型可用 `python test.py --model-dir littleGPT_model/archive/pre_round15_model_20261108` 对照。此次提升由用户指定；同一测试集的困惑度为新版 114.56、旧版 111.78。
 3. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
 4. 训练脚本按 CUDA → MPS → CPU 的顺序选择设备；请安装与当前设备兼容的 PyTorch。
