@@ -164,6 +164,14 @@ python train_GPT2.py --epochs 40 --early-stopping-patience 3
 
 此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入新的 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。先前两组使用部分语料的产物保留在 `runs/round15/` 和 `runs/round15_old_eval/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
 
+启动训练前会用 `data_pipeline/reports/active_train_sha256.json` 核对四个训练文件的 SHA-256、文件列表和总指纹。总指纹由按文件名排序的逐文件哈希计算。不启动训练也可单独核对：
+
+```bash
+python train_GPT2.py --verify-train-data-only
+```
+
+自定义 `--train-dir` 时需同时提供该数据目录对应的 `--train-manifest`。清单格式见 `data_pipeline/reports/active_train_sha256.json`。用更新后的脚本保存 checkpoint 时会记录总指纹；已有 checkpoint 没有这个字段时，脚本会提示无法核对其训练来源。
+
 其他训练参数示例：
 
 ```bash
@@ -175,6 +183,7 @@ python train_GPT2.py --epochs 30 --batch-size 8 --block-size 96 --learning-rate 
 ```bash
 python train_GPT2.py \
   --train-dir path/to/other/train \
+  --train-manifest path/to/other/train_sha256.json \
   --eval-dir path/to/other/valid \
   --checkpoint-dir runs/other/checkpoints \
   --output-dir runs/other/model \

@@ -7,3 +7,5 @@
 第 12 轮将清洗后的四类语料按来源组及近重复候选划分为 train / valid / test，固定种子为 `20261107`，目标比例为 80% / 10% / 10%；第 15 轮沿用集合归属。原仓库的 `valid/chinese.jsonl` 和 `valid/english.jsonl` 是更早建立的 200 条验证集，与本目录的 round15 `valid/` 不是同一批记录。
 
 仓库默认的 `data/train/` 已将 round15 的 train、valid、test 三个清洗分片合并为完整训练集（10,861 条），每条记录以 `round15_split` 保留原分片；`valid/` 和 `test/` 沿用旧模型的原始集合。合并脚本为 `scripts/activate_full_round15_train.py`，覆盖前的训练文件备份在本地 `backups/pre_round15_20261108/`。`train_GPT2.py` 默认把新训练产物写入 `runs/round15_full_old_eval/`，保留旧 `checkpoints/` 和 `littleGPT_model/`。本目录的 round15 三分片仍保存为清洗快照，不用于当前新旧模型的对照评估。
+
+`reports/active_train_sha256.json` 记录当前默认训练入口四个 JSONL 文件的 SHA-256 和总指纹。训练脚本在读取语料前核对，或用 `python train_GPT2.py --verify-train-data-only` 单独核对。

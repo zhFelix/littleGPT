@@ -1,5 +1,6 @@
 from pathlib import Path
 import argparse
+import hashlib
 import json
 import math
 import random
@@ -19,6 +20,7 @@ from transformers import (
 
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
+TRAIN_MANIFEST = BASE_DIR / "data_pipeline" / "reports" / "active_train_sha256.json"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
 OUTPUT_DIR = BASE_DIR / "runs" / "round15_full_old_eval" / "model"
 CHECKPOINT_DIR = BASE_DIR / "runs" / "round15_full_old_eval" / "checkpoints"
@@ -167,6 +169,43 @@ def collect_dataset_files(data_dir: Path) -> list[Path]:
 
 def collect_training_files(train_dir: Path) -> list[Path]:
     return collect_dataset_files(train_dir)
+
+
+def verify_training_data_sha256(train_dir: Path, files: list[Path], manifest_path: Path) -> str:
+    """核对实际读取的训练文件，并返回文件名与哈希组成的总指纹。"""
+    if not manifest_path.is_file():
+        raise FileNotFoundError(f"训练数据 SHA-256 清单不存在: {manifest_path}")
+    manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
+    expected = manifest.get("files")
+    if manifest.get("schema_version") != 1 or not isinstance(expected, dict) or not expected:
+        raise ValueError(f"训练数据 SHA-256 清单格式无效: {manifest_path}")
+
+    selected = {path.name: path for path in files}
+    available = {path.name for path in train_dir.iterdir() if path.is_file() and path.suffix in (".jsonl", ".txt")}
+    if set(expected) != set(selected) or set(expected) != available:
+        raise ValueError(
+            f"训练数据文件列表与 SHA-256 清单不一致: expected={sorted(expected)}, "
+            f"selected={sorted(selected)}, available={sorted(available)}"
+        )
+
+    actual: dict[str, str] = {}
+    for name, path in sorted(selected.items()):
+        digest = hashlib.sha256()
+        with path.open("rb") as stream:
+            for chunk in iter(lambda: stream.read(1024 * 1024), b""):
+                digest.update(chunk)
+        actual[name] = digest.hexdigest()
+        if actual[name] != expected[name]:
+            raise ValueError(f"训练数据 SHA-256 不匹配: {path}，expected={expected[name]}，actual={actual[name]}")
+        print(f"Training SHA-256 OK: {name} {actual[name]}")
+
+    combined = hashlib.sha256(
+        "".join(f"{name} {actual[name]}\n" for name in sorted(actual)).encode("utf-8")
+    ).hexdigest()
+    if combined != manifest.get("combined_sha256"):
+        raise ValueError(f"训练数据总 SHA-256 不匹配: expected={manifest.get('combined_sha256')}，actual={combined}")
+    print(f"Training data SHA-256 verified: {combined}")
+    return combined
 
 
 def load_docs_from_files(files: list[Path]) -> list[str]:
@@ -336,6 +375,7 @@ def sync_best_model(
     best_eval_loss: float,
     scheduler: torch.optim.lr_scheduler.LambdaLR,
     global_step: int,
+    training_data_sha256: str,
 ) -> None:
     save_checkpoint(
         output_dir,
@@ -351,6 +391,7 @@ def sync_best_model(
             "is_best_checkpoint": True,
             "source_checkpoint_dir": str(best_checkpoint_dir),
             "synced_from_best_checkpoint": True,
+            "training_data_sha256": training_data_sha256,
         },
         scheduler=scheduler,
         global_step=global_step,
@@ -520,6 +561,17 @@ def parse_args() -> argparse.Namespace:
         help="Training data directory. Defaults to ./data/train. For a new dataset, also set --eval-dir, --checkpoint-dir and --output-dir.",
     )
     parser.add_argument(
+        "--train-manifest",
+        type=str,
+        default=None,
+        help="Expected SHA-256 manifest for training files. Defaults to the committed manifest for ./data/train; required with --train-dir.",
+    )
+    parser.add_argument(
+        "--verify-train-data-only",
+        action="store_true",
+        help="Check the training files against the SHA-256 manifest and exit without training.",
+    )
+    parser.add_argument(
         "--checkpoint-dir",
         type=str,
         default=None,
@@ -577,7 +629,7 @@ def parse_args() -> argparse.Namespace:
 def resolve_training_paths(args: argparse.Namespace) -> tuple[Path, Path | None, Path, Path]:
     if args.train_dir is not None:
         missing = [
-            option for option in ("eval_dir", "checkpoint_dir", "output_dir")
+            option for option in ("train_manifest", "eval_dir", "checkpoint_dir", "output_dir")
             if getattr(args, option) is None
         ]
         if missing:
@@ -633,6 +685,17 @@ def main() -> None:
     train_dir, eval_dir, checkpoint_dir, output_dir = resolve_training_paths(args)
     best_checkpoint_dir = checkpoint_dir / "best"
 
+    print(f"Training dir: {train_dir}")
+    print(f"Evaluation dir: {eval_dir}")
+    print(f"Checkpoint dir: {checkpoint_dir}")
+    print(f"Output dir: {output_dir}")
+
+    training_files = collect_training_files(train_dir)
+    manifest_path = Path(args.train_manifest).expanduser().resolve() if args.train_manifest else TRAIN_MANIFEST
+    training_data_sha256 = verify_training_data_sha256(train_dir, training_files, manifest_path)
+    if args.verify_train_data_only:
+        return
+
     if torch.cuda.is_available():
         device = torch.device("cuda")
     elif torch.backends.mps.is_available():
@@ -640,15 +703,10 @@ def main() -> None:
     else:
         device = torch.device("cpu")
     print(f"Using device: {device}")
-    print(f"Training dir: {train_dir}")
-    print(f"Evaluation dir: {eval_dir}")
-    print(f"Checkpoint dir: {checkpoint_dir}")
-    print(f"Output dir: {output_dir}")
 
     tokenizer = AutoTokenizer.from_pretrained(TOKENIZER_DIR)
     # We chunk the token ids ourselves below, so the full corpus can exceed model_max_length.
     tokenizer.model_max_length = 10_000_000
-    training_files = collect_training_files(train_dir)
     training_docs = load_training_docs(training_files)
     # 训练与验证统一：逐文档 tokenize，并显式追加 EOS 后拍平。
     training_input_ids = tokenize_docs_with_eos(tokenizer, training_docs)
@@ -716,6 +774,15 @@ def main() -> None:
             latest_checkpoint = None
             model = build_model(tokenizer, effective_block_size).to(device)
             print("Training from scratch with the current smaller model configuration.")
+
+    if latest_checkpoint is not None:
+        checkpoint_sha256 = trainer_state.get("training_data_sha256")
+        if checkpoint_sha256 is None:
+            print("Checkpoint predates training data SHA-256 tracking; current files match the manifest, but checkpoint lineage is unverified.")
+        elif checkpoint_sha256 != training_data_sha256:
+            raise ValueError(
+                f"Checkpoint training data SHA-256 mismatch: checkpoint={checkpoint_sha256}, current={training_data_sha256}"
+            )
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.learning_rate, weight_decay=WEIGHT_DECAY)
     can_restore_training_state = latest_checkpoint is not None and not position_embeddings_expanded
@@ -813,6 +880,7 @@ def main() -> None:
                         "best_epoch": best_epoch,
                         "epochs_without_improvement": epochs_without_improvement,
                         "is_best_checkpoint": True,
+                        "training_data_sha256": training_data_sha256,
                     },
                     scheduler=scheduler,
                     global_step=global_step,
@@ -828,6 +896,7 @@ def main() -> None:
                     best_eval_loss,
                     scheduler,
                     global_step,
+                    training_data_sha256,
                 )
                 print(f"New best checkpoint: {best_checkpoint_dir} (epoch={best_epoch}, eval_loss={best_eval_loss:.4f})")
             else:
@@ -841,6 +910,7 @@ def main() -> None:
             "best_eval_loss": best_eval_loss,
             "best_epoch": best_epoch,
             "epochs_without_improvement": epochs_without_improvement,
+            "training_data_sha256": training_data_sha256,
         }
         if current_epoch % args.save_checkpoint_every == 0 or current_epoch == args.epochs:
             save_checkpoint(
