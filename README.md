@@ -138,7 +138,7 @@ uv pip install --python .venv/bin/python -r requirements-macos-mps.txt
 .venv/bin/python train_GPT2.py --help
 ```
 
-已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 已合并清洗版 round15 三个分片，共 10,861 条；`valid/` 和 `test/` 保留旧模型使用的原始验证与测试数据。合并时把每条记录的原分片保存在 `round15_split`，并把 `split` 改为 `train`。原训练数据备份在本地 `backups/pre_round15_20261108/`；round15 三集合快照仍在 `data_pipeline/staging/round15/`。
+已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 已合并清洗版 round15 三个分片，共 10,861 条；`valid/` 和 `test/` 保留旧模型使用的原始验证与测试数据。合并时把每条记录的原分片保存在 `round15_split`，并把 `split` 改为 `train`。原训练数据的本地备份已清理；round15 三集合快照仍在 `data_pipeline/staging/round15/`。
 
 如果你需要手动安装，也可以使用：
 
@@ -162,7 +162,7 @@ python training_tokenizer.py
 python train_GPT2.py --epochs 40 --early-stopping-patience 3
 ```
 
-此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。该轮最佳模型已手工复制到默认目录 `checkpoints/best/` 和 `littleGPT_model/`。先前两组使用部分语料的产物保留在 `runs/round15/` 和 `runs/round15_old_eval/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
+此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。该轮最佳模型已手工复制到默认目录 `checkpoints/best/` 和 `littleGPT_model/`，`runs/` 中的实验产物已清理。再次使用默认目录会从零训练；如需从已提升的模型续训，请指定相应 checkpoint 目录。
 
 启动训练前会用 `data_pipeline/reports/active_train_sha256.json` 核对四个训练文件的 SHA-256、文件列表和总指纹。总指纹由按文件名排序的逐文件哈希计算。不启动训练也可单独核对：
 
@@ -209,7 +209,7 @@ python train_GPT2.py \
 ### 4. 文本生成
 
 ```bash
-python generate.py --model-dir runs/round15_full_old_eval/model
+python generate.py
 ```
 
 自定义 prompt：
@@ -228,7 +228,7 @@ python generate.py "中国的首都是" --greedy
 ### 5. 运行测试
 
 ```bash
-python test.py --model-dir runs/round15_full_old_eval/checkpoints/best
+python test.py
 ```
 
 也可以自定义 prompt：
@@ -255,13 +255,9 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 - `checkpoints/best/` 和 `littleGPT_model/`：目前默认使用的完整清洗版模型
 - `littleGPT_model/archive/pre_round15_model_20261108/`：已提交的上一版最佳推理模型及 SHA-256 清单
 - `backups/pre_full_round15_model_20261108/best/`：上一版完整 checkpoint 的本地备份，含未提交的 `trainer_state.pt`
-- `runs/round15_full_old_eval/checkpoints/best/`：完整清洗版训练在原始验证集上最优的 checkpoint
-- `runs/round15_full_old_eval/model/`：完整清洗版训练结束后导出的最终模型
-- `runs/round15_old_eval/`：仅使用 round15 训练分片的上一组产物
-- `runs/round15/`：曾使用 round15 验证集的 4 轮部分训练产物
-- `backups/pre_round15_20261108/`：覆盖前的本地训练和验证数据备份
+- `runs/`：下次训练才会重新创建的实验输出目录；先前实验产物已清理
 
-`runs/` 和 `backups/` 已被 `.gitignore` 忽略，属于本地训练产物和备份。
+`runs/` 和 `backups/` 已被 `.gitignore` 忽略，属于本地产物和备份。
 
 ## 注意事项
 
