@@ -138,7 +138,7 @@ uv pip install --python .venv/bin/python -r requirements-macos-mps.txt
 .venv/bin/python train_GPT2.py --help
 ```
 
-已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 已复制清洗版 round15 训练数据；`valid/` 和 `test/` 保留旧模型使用的原始验证与测试数据。原训练数据备份在本地 `backups/pre_round15_20261108/`；round15 三集合快照仍在 `data_pipeline/staging/round15/`。
+已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 已合并清洗版 round15 三个分片，共 10,861 条；`valid/` 和 `test/` 保留旧模型使用的原始验证与测试数据。合并时把每条记录的原分片保存在 `round15_split`，并把 `split` 改为 `train`。原训练数据备份在本地 `backups/pre_round15_20261108/`；round15 三集合快照仍在 `data_pipeline/staging/round15/`。
 
 如果你需要手动安装，也可以使用：
 
@@ -162,7 +162,7 @@ python training_tokenizer.py
 python train_GPT2.py --epochs 40 --early-stopping-patience 3
 ```
 
-此命令从 `data/train/` 读取 round15 训练集、用原始 `valid/` 验证，默认写入新的 `runs/round15_old_eval/checkpoints/` 和 `runs/round15_old_eval/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。先前按 round15 验证集训练的 4 轮产物留在 `runs/round15/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
+此命令从 `data/train/` 读取完整的 10,861 条清洗记录、用原始 `valid/` 验证，默认写入新的 `runs/round15_full_old_eval/checkpoints/` 和 `runs/round15_full_old_eval/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。先前两组使用部分语料的产物保留在 `runs/round15/` 和 `runs/round15_old_eval/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
 
 其他训练参数示例：
 
@@ -191,16 +191,16 @@ python train_GPT2.py \
 
 默认训练过程中会生成
 
-- `runs/round15_old_eval/checkpoints/`
-- `runs/round15_old_eval/checkpoints/best/`
-- `runs/round15_old_eval/model/`
+- `runs/round15_full_old_eval/checkpoints/`
+- `runs/round15_full_old_eval/checkpoints/best/`
+- `runs/round15_full_old_eval/model/`
 
 `runs/` 下的产物不会改动旧模型。
 
 ### 4. 文本生成
 
 ```bash
-python generate.py --model-dir runs/round15_old_eval/model
+python generate.py --model-dir runs/round15_full_old_eval/model
 ```
 
 自定义 prompt：
@@ -219,7 +219,7 @@ python generate.py "中国的首都是" --greedy
 ### 5. 运行测试
 
 ```bash
-python test.py --model-dir runs/round15_old_eval/checkpoints/best
+python test.py --model-dir runs/round15_full_old_eval/checkpoints/best
 ```
 
 也可以自定义 prompt：
@@ -244,8 +244,9 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 
 - `tokenizer/`：训练得到的分词器
 - `checkpoints/` 和 `littleGPT_model/`：上一轮训练产物，保留作对照
-- `runs/round15_old_eval/checkpoints/best/`：新训练在原始验证集上最优的 checkpoint
-- `runs/round15_old_eval/model/`：新训练结束后导出的最终模型
+- `runs/round15_full_old_eval/checkpoints/best/`：完整清洗版训练在原始验证集上最优的 checkpoint
+- `runs/round15_full_old_eval/model/`：完整清洗版训练结束后导出的最终模型
+- `runs/round15_old_eval/`：仅使用 round15 训练分片的上一组产物
 - `runs/round15/`：曾使用 round15 验证集的 4 轮部分训练产物
 - `backups/pre_round15_20261108/`：覆盖前的本地训练和验证数据备份
 

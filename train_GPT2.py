@@ -20,8 +20,8 @@ from transformers import (
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
-OUTPUT_DIR = BASE_DIR / "runs" / "round15_old_eval" / "model"
-CHECKPOINT_DIR = BASE_DIR / "runs" / "round15_old_eval" / "checkpoints"
+OUTPUT_DIR = BASE_DIR / "runs" / "round15_full_old_eval" / "model"
+CHECKPOINT_DIR = BASE_DIR / "runs" / "round15_full_old_eval" / "checkpoints"
 LEGACY_OUTPUT_DIR = BASE_DIR / "littleGPT_model"
 LEGACY_CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
@@ -523,13 +523,13 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint-dir",
         type=str,
         default=None,
-        help="Checkpoint directory. Defaults to ./runs/round15_old_eval/checkpoints; existing checkpoints here are resumed automatically.",
+        help="Checkpoint directory. Defaults to ./runs/round15_full_old_eval/checkpoints; existing checkpoints here are resumed automatically.",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
         default=None,
-        help="Final model directory. Defaults to ./runs/round15_old_eval/model.",
+        help="Final model directory. Defaults to ./runs/round15_full_old_eval/model.",
     )
     parser.add_argument("--epochs", type=int, default=EPOCHS, help="Target total epochs after resuming.")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Training batch size.")
