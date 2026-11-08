@@ -138,7 +138,7 @@ uv pip install --python .venv/bin/python -r requirements-macos-mps.txt
 .venv/bin/python train_GPT2.py --help
 ```
 
-已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 和 `valid/` 已复制清洗版 round15 数据，原文件备份在本地 `backups/pre_round15_20261108/`；round15 原始快照仍在 `data_pipeline/staging/round15/`。
+已在 Apple M1 / macOS 27.0.1 验证上述依赖能导入训练脚本、加载 tokenizer，且非沙箱环境下 MPS 可用。默认的 `data/train/` 已复制清洗版 round15 训练数据；`valid/` 和 `test/` 保留旧模型使用的原始验证与测试数据。原训练数据备份在本地 `backups/pre_round15_20261108/`；round15 三集合快照仍在 `data_pipeline/staging/round15/`。
 
 如果你需要手动安装，也可以使用：
 
@@ -162,7 +162,7 @@ python training_tokenizer.py
 python train_GPT2.py --epochs 40 --early-stopping-patience 3
 ```
 
-此命令从 `data/train/` 读取 round15 训练集、用 `valid/` 验证，默认写入新的 `runs/round15/checkpoints/` 和 `runs/round15/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
+此命令从 `data/train/` 读取 round15 训练集、用原始 `valid/` 验证，默认写入新的 `runs/round15_old_eval/checkpoints/` 和 `runs/round15_old_eval/model/`。旧模型仍在 `checkpoints/` 和 `littleGPT_model/`。先前按 round15 验证集训练的 4 轮产物留在 `runs/round15/`，不会被续接。再次使用同一 checkpoint 目录会自动续训；如需另一组从零训练，请指定新的空目录。
 
 其他训练参数示例：
 
@@ -181,7 +181,7 @@ python train_GPT2.py \
   --epochs 40 --early-stopping-patience 3
 ```
 
-`--train-dir` 与其余三个目录参数须一起提供，避免不同数据共用 checkpoint。`data_pipeline/staging/round15/test` 留到训练完成后做最终评估，不用于 early stopping。
+`--train-dir` 与其余三个目录参数须一起提供，避免不同数据共用 checkpoint。本次对照沿用原始 `test/` 做最终评估，不用于 early stopping。
 - --epochs：表示这次训练中要训练多少轮
 - --batch-size：表示模型在一次前向传播（推理）或一次梯度更新（训练）中，同时处理的“样本/序列”的数量。
 - --block-size：表示这次训练的上下文长度
@@ -191,16 +191,16 @@ python train_GPT2.py \
 
 默认训练过程中会生成
 
-- `runs/round15/checkpoints/`
-- `runs/round15/checkpoints/best/`
-- `runs/round15/model/`
+- `runs/round15_old_eval/checkpoints/`
+- `runs/round15_old_eval/checkpoints/best/`
+- `runs/round15_old_eval/model/`
 
 `runs/` 下的产物不会改动旧模型。
 
 ### 4. 文本生成
 
 ```bash
-python generate.py --model-dir runs/round15/model
+python generate.py --model-dir runs/round15_old_eval/model
 ```
 
 自定义 prompt：
@@ -219,7 +219,7 @@ python generate.py "中国的首都是" --greedy
 ### 5. 运行测试
 
 ```bash
-python test.py --model-dir runs/round15/checkpoints/best
+python test.py --model-dir runs/round15_old_eval/checkpoints/best
 ```
 
 也可以自定义 prompt：
@@ -244,8 +244,9 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 
 - `tokenizer/`：训练得到的分词器
 - `checkpoints/` 和 `littleGPT_model/`：上一轮训练产物，保留作对照
-- `runs/round15/checkpoints/best/`：新训练在验证集上最优的 checkpoint
-- `runs/round15/model/`：新训练结束后导出的最终模型
+- `runs/round15_old_eval/checkpoints/best/`：新训练在原始验证集上最优的 checkpoint
+- `runs/round15_old_eval/model/`：新训练结束后导出的最终模型
+- `runs/round15/`：曾使用 round15 验证集的 4 轮部分训练产物
 - `backups/pre_round15_20261108/`：覆盖前的本地训练和验证数据备份
 
 `runs/` 和 `backups/` 已被 `.gitignore` 忽略，属于本地训练产物和备份。
@@ -253,6 +254,6 @@ python test.py --prompt "中国的首都是" --prompt "A useful scientific theor
 ## 注意事项
 
 1. 训练脚本优先读取 `natural_zh`、`natural_en`、`article_zh`、`article_en`，未找到时读取目录中的 JSONL/TXT 文件。
-2. `generate.py` 和 `test.py` 仍默认读取旧模型目录；检查新模型时请显式传入 `--model-dir`。`test.py` 当前仍读取旧 `test/` 数据；round15 的独立测试集位于 `data_pipeline/staging/round15/test/`。
+2. `generate.py` 和 `test.py` 仍默认读取旧模型目录；检查新模型时请显式传入 `--model-dir`。`test.py` 读取原始 `test/` 数据，供新旧模型在同一测试集上比较。
 3. 这是一个实验型仓库，适合快速迭代，但还没有做成完整的配置化训练框架。
 4. 训练脚本按 CUDA → MPS → CPU 的顺序选择设备；请安装与当前设备兼容的 PyTorch。

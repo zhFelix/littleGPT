@@ -20,8 +20,8 @@ from transformers import (
 BASE_DIR = Path(__file__).resolve().parent
 DATA_DIR = BASE_DIR / "data" / "train"
 TOKENIZER_DIR = BASE_DIR / "tokenizer"
-OUTPUT_DIR = BASE_DIR / "runs" / "round15" / "model"
-CHECKPOINT_DIR = BASE_DIR / "runs" / "round15" / "checkpoints"
+OUTPUT_DIR = BASE_DIR / "runs" / "round15_old_eval" / "model"
+CHECKPOINT_DIR = BASE_DIR / "runs" / "round15_old_eval" / "checkpoints"
 LEGACY_OUTPUT_DIR = BASE_DIR / "littleGPT_model"
 LEGACY_CHECKPOINT_DIR = BASE_DIR / "checkpoints"
 DATASETS = ["natural_zh", "natural_en", "article_zh", "article_en"]
@@ -194,14 +194,15 @@ def assert_no_train_valid_overlap(train_files: list[Path], valid_files: list[Pat
 
     def markers(files: list[Path], expected_split: str) -> dict[str, set[str]]:
         found = {name: set() for name in marker_names}
+        allowed_splits = {"valid", "validation"} if expected_split == "valid" else {expected_split}
         for path in files:
             for line in path.read_text(encoding="utf-8").splitlines():
                 if not line.strip():
                     continue
                 record = json.loads(line) if path.suffix == ".jsonl" else {"text": line.strip()}
                 split = record.get("split")
-                if split is not None and split != expected_split:
-                    raise ValueError(f"{path} 中的记录 {record.get('id', '')} 标记为 {split}，预期为 {expected_split}。")
+                if split is not None and split not in allowed_splits:
+                    raise ValueError(f"{path} 中的记录 {record.get('id', '')} 标记为 {split}，预期为 {sorted(allowed_splits)}。")
                 for name in marker_names:
                     value = record.get(name)
                     if value:
@@ -522,13 +523,13 @@ def parse_args() -> argparse.Namespace:
         "--checkpoint-dir",
         type=str,
         default=None,
-        help="Checkpoint directory. Defaults to ./runs/round15/checkpoints; existing checkpoints here are resumed automatically.",
+        help="Checkpoint directory. Defaults to ./runs/round15_old_eval/checkpoints; existing checkpoints here are resumed automatically.",
     )
     parser.add_argument(
         "--output-dir",
         type=str,
         default=None,
-        help="Final model directory. Defaults to ./runs/round15/model.",
+        help="Final model directory. Defaults to ./runs/round15_old_eval/model.",
     )
     parser.add_argument("--epochs", type=int, default=EPOCHS, help="Target total epochs after resuming.")
     parser.add_argument("--batch-size", type=int, default=BATCH_SIZE, help="Training batch size.")
