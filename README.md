@@ -112,7 +112,7 @@ littleGPT/
 - `valid/`：验证集
 - `test/`：测试集
 
-训练脚本会优先把 `valid/` 作为验证集；如果 `valid/` 不存在，则回退使用 `test/`。
+训练脚本只把 `valid/` 用作默认验证集；若它不存在，会在训练前报错。`test/` 不参与训练或 early stopping。
 
 ## 快速开始
 

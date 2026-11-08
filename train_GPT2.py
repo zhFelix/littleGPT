@@ -3,6 +3,7 @@ import argparse
 import json
 import math
 import random
+import re
 import shutil
 
 import torch
@@ -154,7 +155,7 @@ def collect_dataset_files(data_dir: Path) -> list[Path]:
     if files:
         return files
     # 回退：按 DATASETS 命名找不到时，扫描目录下所有 jsonl/txt，
-    # 以兼容 valid/test 目录中采用旧命名（如 chinese/english）的验证集。
+    # 以兼容采用旧命名（如 chinese/english）的验证集。
     for path in sorted(data_dir.glob("*.jsonl")):
         files.append(path)
     for path in sorted(data_dir.glob("*.txt")):
@@ -185,6 +186,38 @@ def load_docs_from_files(files: list[Path]) -> list[str]:
                 line.strip() for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
             )
     return docs
+
+
+def assert_no_train_valid_overlap(train_files: list[Path], valid_files: list[Path]) -> None:
+    """在训练前拒绝重复正文、记录 ID 或来源组跨训练/验证集。"""
+    marker_names = ("id", "group_id", "source_url", "source_title", "text")
+
+    def markers(files: list[Path], expected_split: str) -> dict[str, set[str]]:
+        found = {name: set() for name in marker_names}
+        for path in files:
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if not line.strip():
+                    continue
+                record = json.loads(line) if path.suffix == ".jsonl" else {"text": line.strip()}
+                split = record.get("split")
+                if split is not None and split != expected_split:
+                    raise ValueError(f"{path} 中的记录 {record.get('id', '')} 标记为 {split}，预期为 {expected_split}。")
+                for name in marker_names:
+                    value = record.get(name)
+                    if value:
+                        if name == "text":
+                            value = re.sub(r"\s+", "", value.casefold())
+                        elif name == "source_title":
+                            value = f"{record.get('source', '')}:{value}"
+                        found[name].add(value)
+        return found
+
+    training = markers(train_files, "train")
+    validation = markers(valid_files, "valid")
+    for name in marker_names:
+        overlap = training[name] & validation[name]
+        if overlap:
+            raise ValueError(f"训练集与验证集的 {name} 存在交叉（{len(overlap)} 项），已停止训练。")
 
 
 def load_text_from_files(files: list[Path]) -> str:
@@ -437,10 +470,6 @@ def resolve_eval_dir(eval_dir_arg: str | None) -> Path | None:
     if valid_dir.exists():
         return valid_dir
 
-    test_dir = BASE_DIR / "test"
-    if test_dir.exists():
-        return test_dir
-
     return None
 
 
@@ -509,7 +538,7 @@ def parse_args() -> argparse.Namespace:
         "--eval-dir",
         type=str,
         default=None,
-        help="Directory used for validation. Defaults to ./valid (or ./test if ./valid is missing).",
+        help="Directory used for validation. Defaults to ./valid; the test directory is never used for validation.",
     )
     parser.add_argument(
         "--eval-every",
@@ -563,6 +592,10 @@ def resolve_training_paths(args: argparse.Namespace) -> tuple[Path, Path | None,
         raise FileNotFoundError(f"Training directory not found: {train_dir}")
     if args.eval_dir is not None and (eval_dir is None or not eval_dir.is_dir()):
         raise FileNotFoundError(f"Evaluation directory not found: {eval_dir}")
+    if eval_dir is None:
+        raise FileNotFoundError("Validation directory not found: pass --eval-dir or create ./valid. The test set is never used for validation.")
+    if eval_dir.name.lower() == "test":
+        raise ValueError("测试集不能作为训练过程中的验证集。")
     if eval_dir is not None and train_dir == eval_dir:
         raise ValueError("训练目录和验证目录不能相同。")
     if checkpoint_dir == output_dir or checkpoint_dir in output_dir.parents or output_dir in checkpoint_dir.parents:
@@ -632,12 +665,11 @@ def main() -> None:
     if eval_dir is not None:
         try:
             eval_files = collect_dataset_files(eval_dir)
+            assert_no_train_valid_overlap(training_files, eval_files)
             eval_docs = load_docs_from_files(eval_files)
             eval_dataset = build_dataset_from_docs(tokenizer, eval_docs, effective_block_size)
             if eval_dataset is None:
-                if args.eval_dir is not None:
-                    raise ValueError(f"验证目录 {eval_dir} 的文本不足以切出 block_size={effective_block_size} 的样本。")
-                print(f"Evaluation skipped: {eval_dir} 中的文本长度不足以切出 block_size={effective_block_size} 的样本。")
+                raise ValueError(f"验证目录 {eval_dir} 的文本不足以切出 block_size={effective_block_size} 的样本。")
             else:
                 eval_dataloader = DataLoader(eval_dataset, batch_size=args.batch_size, shuffle=False)
                 print(f"Evaluation files: {len(eval_files)}")
@@ -650,12 +682,8 @@ def main() -> None:
                             source_dataset, batch_size=args.batch_size, shuffle=False
                         )
                 print(f"Evaluation samples: {len(eval_dataset)}")
-        except FileNotFoundError:
-            if args.eval_dir is not None:
-                raise
-            print(f"Evaluation skipped: no dataset files found in {eval_dir}")
-    else:
-        print("Evaluation skipped: neither ./valid nor ./test exists.")
+        except FileNotFoundError as exc:
+            raise FileNotFoundError(f"验证目录 {eval_dir} 中未找到数据文件。") from exc
 
     latest_checkpoint = find_latest_checkpoint(checkpoint_dir)
     start_epoch = 0
